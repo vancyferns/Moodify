@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moodify Emotion Detector</title>
+</head>
+<body>
+    <h1>Upload or Record Video (10 seconds)</h1>
+
+    <input type="file" id="videoInput" accept="video/*">
+    <button onclick="uploadVideo()">Upload</button>
+
+    <br><br>
+    <button onclick="startRecording()">Start Recording</button>
+    <button onclick="stopRecording()">Stop & Upload</button>
+    <video id="preview" autoplay muted></video>
+
+    <p id="result"></p>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
