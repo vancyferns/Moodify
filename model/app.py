@@ -17,7 +17,7 @@ pygame.mixer.init()
 
 # Function to play music based on emotion
 def play_music(emotion):
-    music_folder = os.path.join("Moodify", "model", "music", emotion)  # Adjusted full path
+    music_folder = os.path.join("Moodify", "model", "music", emotion)  # Adjust as per your structure
     if not os.path.exists(music_folder):
         print(f"[ERROR] No folder found for emotion: {emotion}")
         return
@@ -50,9 +50,13 @@ def analyze():
     video_path = os.path.join(UPLOAD_FOLDER, video_file.filename)
     video_file.save(video_path)
 
-    # Extract middle frame
+    # Extract middle frame from video
     cap = cv2.VideoCapture(video_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    if total_frames == 0:
+        return jsonify({'error': 'Video has no frames'}), 400
+
     cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames // 2)
     ret, frame = cap.read()
     cap.release()
@@ -61,29 +65,29 @@ def analyze():
         return jsonify({'error': 'Could not extract frame'}), 500
 
     try:
-        # Analyze emotions
+        # Analyze with DeepFace
         analysis = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
-        emotion_scores = analysis[0]['emotion']
+        emotions = analysis[0]['emotion']
 
-        # Select specific emotions
-        target_emotions = ['angry', 'happy', 'sad']
-        selected_emotions = {k: float(v) for k, v in emotion_scores.items() if k in target_emotions}
+        # Group into 3 categories
+        combined = {
+            "angry": emotions.get("angry", 0) + emotions.get("disgust", 0),
+            "happy": emotions.get("happy", 0),
+            "sad": emotions.get("sad", 0) + emotions.get("fear", 0)
+        }
 
-        if not selected_emotions:
-            return jsonify({'error': 'Could not determine emotion'}), 500
+        # Determine dominant emotion
+        dominant_emotion = max(combined, key=combined.get)
+        confidence = round(combined[dominant_emotion], 2)
 
-        # Normalize and find dominant
-        total = sum(selected_emotions.values())
-        normalized_emotions = {k: (v / total) * 100 for k, v in selected_emotions.items()}
+        # Normalize confidence to percentage
+        total = sum(combined.values())
+        confidence = (confidence / total) * 100 if total > 0 else 0
 
-        dominant_emotion = max(normalized_emotions, key=normalized_emotions.get)
-        confidence = round(normalized_emotions[dominant_emotion], 2)
+        # Boost confidence between 83–98%
+        confidence = max(83.0, min(confidence * 1.2, 98.0))
 
-        # Boost confidence for effect
-        boosted_conf = round(confidence * 1.2, 2)
-        confidence = max(83.0, min(boosted_conf, 98.0))
-
-        # Play music
+        # Play music based on dominant emotion
         play_music(dominant_emotion)
 
         return jsonify({
