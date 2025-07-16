@@ -1,0 +1,37 @@
+# === Logs ===
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# === Node (React frontend) ===
+client/node_modules/
+client/dist/
+client/dist-ssr/
+client/*.local
+
+# === Python (Flask backend) ===
+model/venv/
+model/__pycache__/
+model/*.pyc
+model/uploads/
+
+# === macOS / System Files ===
+.DS_Store
+
+# === IDEs / Editors ===
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# === Environment Files ===
+.env
+.env.*
