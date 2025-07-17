@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { FaUpload, FaVideo } from 'react-icons/fa';
 import { ReactMediaRecorder } from 'react-media-recorder';
 import { useNavigate } from 'react-router-dom';
+import './App.css';
+import happyImg from './assets/happy.png';
+import sadImg from './assets/sad.png';
+import angryImg from './assets/angry.png';
+
 
 const EmotionDetection = () => {
   const [result, setResult] = useState(null);
@@ -50,7 +55,9 @@ const EmotionDetection = () => {
   };
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-br from-indigo-200 to-purple-300 flex items-center justify-center">
+      <div className={`w-screen h-screen flex items-center justify-center ${
+          result?.emotion ? `${result.emotion}-bg` : 'default-bg'
+              }`}>
       <div className="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-md mx-auto text-center space-y-6">
         <h1 className="text-3xl font-bold text-gray-800">Emotion Detection</h1>
         <p className="text-sm text-gray-500">Upload or record a 10-second video to detect your emotion</p>
@@ -116,6 +123,11 @@ const EmotionDetection = () => {
           {result?.error && <p className="text-red-600 font-medium">Error: {result.error}</p>}
           {result?.emotion && (
             <div className="text-center space-y-2">
+               <div className="emoji">
+                   {result.emotion === 'happy' && <img src={happyImg} alt="happy" />}
+                   {result.emotion === 'sad' && <img src={sadImg} alt="sad" />}
+                   {result.emotion === 'angry' && <img src={angryImg} alt="angry" />}
+                  </div>
               <p className="text-xl font-semibold text-gray-800">Emotion: {result.emotion}</p>
               <p className="text-md text-gray-600">
                 Confidence: {result.confidence.toFixed(1)}%
