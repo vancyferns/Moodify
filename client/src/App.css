@@ -1,13 +1,13 @@
 .happy-bg {
-  background: linear-gradient(135deg, #fff9c4, #ffe082); /* Light Yellow to Soft Orange */
+  background: linear-gradient(135deg, #fff9c4, #ffe082); /*Light Yellow to Soft Orange*/
 }
 
 .sad-bg {
-  background: linear-gradient(135deg, #bbdefb, #90caf9); /* Light Blue to Mid Blue */
+  background: linear-gradient(135deg, #bbdefb, #90caf9); /*Light Blue to Mid Blue*/
 }
 
 .angry-bg {
-  background: linear-gradient(135deg, #ffcdd2, #ef9a9a); /* Light Red to Deeper Red */
+  background: linear-gradient(135deg, #ffcdd2, #ef9a9a); /*Light Red to Deeper Red*/
 }
 
 .default-bg {
@@ -24,7 +24,7 @@
 }
 
 .emoji img {
-  width: 120px;           /* Adjust size as needed */
+  width: 120px;           
   height: 120px;
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
