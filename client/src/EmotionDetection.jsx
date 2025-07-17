@@ -54,6 +54,11 @@ const EmotionDetection = () => {
     else alert('No song suggestions for this emotion.');
   };
 
+  // New function to navigate to the questionnaire
+  const handleQuestionnaireRedirect = () => {
+    navigate('/questionnaire');
+  };
+
   return (
       <div className={`w-screen h-screen flex items-center justify-center ${
           result?.emotion ? `${result.emotion}-bg` : 'default-bg'
@@ -144,6 +149,12 @@ const EmotionDetection = () => {
             </div>
           )}
         </div>
+
+        {/* New Questionnaire Button */}
+         <button
+          className="mt-6 w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-300"
+          onClick={handleQuestionnaireRedirect}
+        >Answer Questionnaire</button>
       </div>
     </div>
   );
