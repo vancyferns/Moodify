@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
-import { FaUpload, FaVideo } from 'react-icons/fa';
-import { ReactMediaRecorder } from 'react-media-recorder';
+
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './App.css';
 import happyImg from './assets/happy.png';
 import sadImg from './assets/sad.png';
 import angryImg from './assets/angry.png';
 
-
 const EmotionDetection = () => {
+  
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showButton, setShowButton] = useState(false);
-  const navigate = useNavigate();
+  const [isRecording, setIsRecording] = useState(false);
 
+  const navigate = useNavigate();
+  const videoRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
+  
   const analyzeVideo = async (videoBlob) => {
     setLoading(true);
     setResult(null);
@@ -31,10 +34,7 @@ const EmotionDetection = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setResult({
-          emotion: data.emotion,
-          confidence: data.confidence,
-        });
+        setResult({ emotion: data.emotion, confidence: data.confidence });
         setShowButton(true);
       } else {
         setResult({ error: data.error });
@@ -46,6 +46,40 @@ const EmotionDetection = () => {
     setLoading(false);
   };
 
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+    }
+
+    recordedChunksRef.current = [];
+
+    const mediaRecorder = new MediaRecorder(stream);
+    mediaRecorderRef.current = mediaRecorder;
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunksRef.current.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunksRef.current, { type: 'video/mp4' });
+      analyzeVideo(blob);
+      stream.getTracks().forEach((track) => track.stop());
+    };
+
+    mediaRecorder.start();
+    setIsRecording(true);
+
+    // Stop recording after 10 seconds
+    setTimeout(() => {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }, 10000);
+  };
+
   const handleSuggestions = () => {
     const emotion = result?.emotion?.toLowerCase();
     if (emotion === 'sad') navigate('/sad-songs');
@@ -54,73 +88,43 @@ const EmotionDetection = () => {
     else alert('No song suggestions for this emotion.');
   };
 
-  // New function to navigate to the questionnaire
   const handleQuestionnaireRedirect = () => {
     navigate('/questionnaire');
   };
 
   return (
-      <div className={`w-screen h-screen flex items-center justify-center ${
-          result?.emotion ? `${result.emotion}-bg` : 'default-bg'
-              }`}>
+    <div className={`w-screen h-screen flex items-center justify-center ${
+      result?.emotion ? `${result.emotion}-bg` : 'default-bg'
+    }`}>
       <div className="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-md mx-auto text-center space-y-6">
         <h1 className="text-3xl font-bold text-gray-800">Emotion Detection</h1>
         <p className="text-sm text-gray-500">Upload or record a 10-second video to detect your emotion</p>
 
-        <div className="space-y-4">
-          {/* Upload Video */}
-          <label className="cursor-pointer inline-flex items-center justify-center w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition">
-            <div className="d-flex align-items-center gap-2">
-              <img src="/upload.png" width="30" height="30" alt="Upload" className="ml-20" />
-              <span>Upload Video</span>
-            </div>
-            <input
-              type="file"
-              accept="video/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  analyzeVideo(file);
-                }
-              }}
-            />
-          </label>
-
-          {/* Live Recording */}
-          <ReactMediaRecorder
-            video
-            timeSlice={10000}
-            render={({ startRecording, stopRecording, mediaBlobUrl }) => (
-              <>
-                <button
-                  className="w-full px-4 py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl inline-flex items-center justify-center transition"
-                  onClick={async () => {
-                    startRecording();
-                    setTimeout(stopRecording, 10000);
-                  }}
-                >
-                  <FaVideo className="mr-2" />
-                  Record Live (10s)
-                </button>
-
-                {mediaBlobUrl && (
-                  <video
-                    src={mediaBlobUrl}
-                    controls
-                    autoPlay
-                    muted
-                    className="w-full mt-4 rounded-xl"
-                    onLoadedMetadata={async () => {
-                      const blob = await fetch(mediaBlobUrl).then((r) => r.blob());
-                      analyzeVideo(blob);
-                    }}
-                  />
-                )}
-              </>
-            )}
+        {/* Upload */}
+        <label className="cursor-pointer inline-flex items-center justify-center w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition">
+          Upload Video
+          <input
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) analyzeVideo(file);
+            }}
           />
-        </div>
+        </label>
+
+        {/* Live Recording */}
+        <button
+          onClick={startRecording}
+          disabled={isRecording}
+          className="w-full px-4 py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition"
+        >
+          {isRecording ? 'Recording...' : 'Record Live (10s)'}
+        </button>
+
+        {/* Live Preview */}
+        <video ref={videoRef} autoPlay muted className="w-full mt-4 rounded-xl border" />
 
         {/* Results */}
         <div className="mt-6">
@@ -128,11 +132,11 @@ const EmotionDetection = () => {
           {result?.error && <p className="text-red-600 font-medium">Error: {result.error}</p>}
           {result?.emotion && (
             <div className="text-center space-y-2">
-               <div className="emoji">
-                   {result.emotion === 'happy' && <img src={happyImg} alt="happy" />}
-                   {result.emotion === 'sad' && <img src={sadImg} alt="sad" />}
-                   {result.emotion === 'angry' && <img src={angryImg} alt="angry" />}
-                  </div>
+              <div className="emoji">
+                {result.emotion === 'happy' && <img src={happyImg} alt="happy" />}
+                {result.emotion === 'sad' && <img src={sadImg} alt="sad" />}
+                {result.emotion === 'angry' && <img src={angryImg} alt="angry" />}
+              </div>
               <p className="text-xl font-semibold text-gray-800">Emotion: {result.emotion}</p>
               <p className="text-md text-gray-600">
                 Confidence: {result.confidence.toFixed(1)}%
@@ -150,11 +154,13 @@ const EmotionDetection = () => {
           )}
         </div>
 
-        {/* New Questionnaire Button */}
-         <button
-          className="mt-6 w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-300"
+        {/* Questionnaire */}
+        <button
+          className="mt-6 w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition"
           onClick={handleQuestionnaireRedirect}
-        >Answer Questionnaire</button>
+        >
+          Answer Questionnaire
+        </button>
       </div>
     </div>
   );
