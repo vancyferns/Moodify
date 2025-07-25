@@ -1,279 +1,208 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
+import { useNavigate } from 'react-router-dom';
 
 function EmotionQuestionnaire() {
-  const questions = [
-    {
-      id: 1,
-      text: "How are you feeling right now, at this very moment?",
-      options: [
-        { text: "Great! Full of energy and optimism.", emotion: "happy", points: 3 },
-        { text: "Okay, just going through the day.", emotion: "neutral", points: 1 },
-        { text: "A bit low, feeling tired or down.", emotion: "sad", points: 3 },
-        { text: "Irritated or frustrated with something.", emotion: "angry", points: 3 },
-      ],
-    },
-    {
-      id: 2,
-      text: "How has your day been going so far?",
-      options: [
-        { text: "Fantastic! Everything's flowing smoothly.", emotion: "happy", points: 3 },
-        { text: "It's been alright, nothing special.", emotion: "neutral", points: 1 },
-        { text: "Quite challenging, feeling a bit overwhelmed.", emotion: "sad", points: 3 },
-        { text: "Annoying, things aren't going my way.", emotion: "angry", points: 3 },
-      ],
-    },
-    {
-      id: 3,
-      text: "Is there anything currently bothering you or causing stress?",
-      options: [
-        { text: "No, feeling peaceful and calm.", emotion: "happy", points: 3 },
-        { text: "A little, but I'm managing.", emotion: "neutral", points: 1 },
-        { text: "Yes, quite a bit. It's weighing on me.", emotion: "sad", points: 3 },
-        { text: "Definitely. I feel quite agitated by it.", emotion: "angry", points: 3 },
-      ],
-    },
-    {
-      id: 4,
-      text: "What's your energy level like right now?",
-      options: [
-        { text: "High and vibrant!", emotion: "happy", points: 3 },
-        { text: "Moderate, can get things done.", emotion: "neutral", points: 1 },
-        { text: "Low, feeling drained and sluggish.", emotion: "sad", points: 3 },
-        { text: "Restless and tense.", emotion: "angry", points: 2 },
-      ],
-    },
-    {
-      id: 5,
-      text: "How would you describe your current thoughts?",
-      options: [
-        { text: "Positive and optimistic.", emotion: "happy", points: 3 },
-        { text: "Neutral or focused on tasks.", emotion: "neutral", points: 1 },
-        { text: "Negative or worrisome.", emotion: "sad", points: 3 },
-        { text: "Critical or resentful.", emotion: "angry", points: 3 },
-      ],
-    },
-    {
-      id: 6,
-      text: "Have you had any recent interactions that affected your mood?",
-      options: [
-        { text: "Yes, positive ones that uplifted me.", emotion: "happy", points: 3 },
-        { text: "Some, but nothing significant.", emotion: "neutral", points: 1 },
-        { text: "Yes, they left me feeling down.", emotion: "sad", points: 3 },
-        { text: "Yes, they made me feel annoyed or angry.", emotion: "angry", points: 3 },
-      ],
-    },
-    {
-      id: 7,
-      text: "What's your general outlook on the immediate future (next few hours/day)?",
-      options: [
-        { text: "Excited and looking forward to it!", emotion: "happy", points: 3 },
-        { text: "Neutral, just taking it as it comes.", emotion: "neutral", points: 1 },
-        { text: "A bit apprehensive or dreading it.", emotion: "sad", points: 3 },
-        { text: "Frustrated about what's ahead.", emotion: "angry", points: 2 },
-      ],
-    },
-    {
-      id: 8,
-      text: "Are you feeling motivated to do things right now?",
-      options: [
-        { text: "Yes, very motivated and eager!", emotion: "happy", points: 3 },
-        { text: "Somewhat, for necessary tasks.", emotion: "neutral", points: 1 },
-        { text: "Not at all, feeling uninspired.", emotion: "sad", points: 3 },
-        { text: "Motivated, but mostly by defiance or annoyance.", emotion: "angry", points: 2 },
-      ],
-    },
-    {
-      id: 9,
-      text: "How do you perceive your current surroundings or environment?",
-      options: [
-        { text: "Comfortable and pleasant.", emotion: "happy", points: 2 },
-        { text: "Just normal, nothing stands out.", emotion: "neutral", points: 1 },
-        { text: "Dull or unwelcoming.", emotion: "sad", points: 2 },
-        { text: "Irritating or chaotic.", emotion: "angry", points: 3 },
-      ],
-    },
-    {
-      id: 10,
-      text: "Is there anything specific you're looking forward to or dreading today?",
-      options: [
-        { text: "Looking forward to something exciting!", emotion: "happy", points: 3 },
-        { text: "Nothing particular, just a regular day.", emotion: "neutral", points: 1 },
-        { text: "Dreading something or feeling a sense of loss.", emotion: "sad", points: 3 },
-        { text: "Feeling angry or resentful about an upcoming event.", emotion: "angry", points: 3 },
-      ],
-    },
-  ];
+  // State for user's text input
+  const [userInput, setUserInput] = useState('');
+  // State to hold the emotion returned by the API
+  const [determinedEmotion, setDeterminedEmotion] = useState(null);
+  // State to hold the song results from Spotify
+  const [spotifyTracks, setSpotifyTracks] = useState([]);
+  // State to manage the loading status during API calls
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  // State to handle any potential errors from the API
+  const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
+
+  // --- IMPORTANT: These are now read from your .env file using Vite's syntax ---
+  // Make sure your .env file variables start with VITE_
+  const SPOTIFY_CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+  const SPOTIFY_CLIENT_SECRET = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
 
   const songSuggestions = {
-    happy: "happy songs",
-    sad: "sad songs",
-    angry: "angry songs",
-    neutral: "relaxing songs",
+    happy: "hollywood and bollywood happy songs",
+    sad: "comforting sad songs",
+    angry: "powerful angry songs",
+    stressed: "calming instrumental music",
+    neutral: "relaxing chill songs",
   };
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [determinedEmotion, setDeterminedEmotion] = useState(null);
-  const [showResults, setShowResults] = useState(false);
-
-  const navigate = useNavigate(); // Initialize useNavigate
-
-  // Function to handle answer selection
-  const handleAnswer = (questionId, option) => {
-    setAnswers((prevAnswers) => ({
-      ...prevAnswers,
-      [questionId]: option,
-    }));
-  };
-
-  // Function to go to the next question
-  const goToNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-    } else {
-      // All questions answered, calculate emotion
-      calculateEmotion();
-      setShowResults(true);
+  // Function to get songs from Spotify
+  const getSpotifySongs = async (emotion) => {
+    setLoadingMessage('Finding perfect songs...');
+    
+    if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
+        setError("Spotify API credentials are not configured. Please check your .env file.");
+        return;
     }
-  };
 
-  // Function to calculate the dominant emotion
-  const calculateEmotion = () => {
-    let happyScore = 0;
-    let sadScore = 0;
-    let angryScore = 0;
-
-    Object.values(answers).forEach((answer) => {
-      if (answer.emotion === "happy") {
-        happyScore += answer.points;
-      } else if (answer.emotion === "sad") {
-        sadScore += answer.points;
-      } else if (answer.emotion === "angry") {
-        angryScore += answer.points;
-      }
-      // Neutral points are just for selection, they don't directly add to specific emotion scores
-    });
-
-    const scores = {
-      happy: happyScore,
-      sad: sadScore,
-      angry: angryScore,
+    // 1. Get Access Token from Spotify
+    const authParameters = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`,
     };
 
-    let dominantEmotion = "neutral"; // Default if scores are all zero or tied
-    let maxScore = 0;
-
-    for (const emotion in scores) {
-      if (scores[emotion] > maxScore) {
-        maxScore = scores[emotion];
-        dominantEmotion = emotion;
+    try {
+      const authResponse = await fetch('https://accounts.spotify.com/api/token', authParameters);
+      if (!authResponse.ok) {
+        throw new Error('Failed to authenticate with Spotify. Check your credentials and .env setup.');
       }
+      const authData = await authResponse.json();
+      const accessToken = authData.access_token;
+
+      // 2. Search for tracks using the access token
+      const searchQuery = encodeURIComponent(songSuggestions[emotion]);
+      const searchParameters = {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      };
+
+      const searchResponse = await fetch(`https://api.spotify.com/v1/search?q=${searchQuery}&type=track&limit=5`, searchParameters);
+      if (!searchResponse.ok) {
+        throw new Error('Failed to fetch songs from Spotify.');
+      }
+      const searchData = await searchResponse.json();
+      setSpotifyTracks(searchData.tracks.items);
+
+    } catch (err) {
+      console.error("Spotify API Error:", err);
+      setError(err.message || "Sorry, we couldn't fetch songs from Spotify.");
+      setSpotifyTracks([]);
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!userInput.trim()) return;
+
+    setIsLoading(true);
+    setDeterminedEmotion(null);
+    setSpotifyTracks([]);
+    setError(null);
+    setLoadingMessage('Analyzing Your Feeling...');
+
+    if (!GEMINI_API_KEY) {
+        setError("Gemini API key is not configured. Please check your .env file.");
+        setIsLoading(false);
+        return;
     }
 
-    setDeterminedEmotion(dominantEmotion);
+    const prompt = `Analyze the user's sentiment from the following text. Classify the primary emotion into one of the following categories: happy, sad, angry, stressed, neutral. Respond with only the JSON object containing the emotion. Text: "${userInput}"`;
+    const payload = {
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: { "emotion": { "type": "STRING", "enum": ["happy", "sad", "angry", "stressed", "neutral"] } },
+          required: ["emotion"]
+        }
+      }
+    };
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+      
+      const result = await response.json();
+      if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+        const jsonText = result.candidates[0].content.parts[0].text;
+        const parsedJson = JSON.parse(jsonText);
+        setDeterminedEmotion(parsedJson.emotion);
+        
+        await getSpotifySongs(parsedJson.emotion);
+      } else {
+        throw new Error("Invalid response structure from API.");
+      }
+    } catch (err) {
+      console.error("Error analyzing emotion:", err);
+      setError("Sorry, we couldn't analyze your feeling. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Reset function to start over
-  const resetQuiz = () => {
-    setCurrentQuestionIndex(0);
-    setAnswers({});
+  const resetState = () => {
+    setUserInput('');
     setDeterminedEmotion(null);
-    setShowResults(false);
+    setSpotifyTracks([]);
+    setError(null);
+    setIsLoading(false);
   };
 
-  // Function to navigate back to the home page (added for consistency if user adds a logo here)
-  const handleGoHome = () => {
-    navigate('/');
-  };
-
-  const currentQuestion = questions[currentQuestionIndex];
+  const handleGoHome = () => navigate('/');
 
   return (
-    <div className="h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center p-4">
-      <div className="bg-white bg-opacity-95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl w-full max-w-2xl text-center">
-        {/* Logo/Home Button - Added for consistency if you wish to add a logo here as well */}
-        <div className="flex justify-center mb-4">
-          <button
-            onClick={handleGoHome}
-            className="text-purple-700 hover:text-purple-900 text-4xl font-extrabold cursor-pointer transition-colors duration-200"
-            aria-label="Go to Home"
-          >
-            HOME
-          </button>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white font-sans flex items-center justify-center p-4">
+      <div className="relative bg-[#1a1a2e] bg-opacity-60 backdrop-blur-md border border-purple-800/50 p-8 rounded-2xl shadow-2xl w-full max-w-2xl text-center transition-all duration-300">
+        <div className="absolute -top-10 -left-10 w-48 h-48 bg-purple-500 blur-3xl opacity-30 rounded-full"></div>
+        <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-blue-500 blur-3xl opacity-30 rounded-full"></div>
+        
+        {/* <div className="absolute top-6 right-6">
+          <button onClick={handleGoHome} className="text-purple-400 hover:text-purple-300 font-bold uppercase tracking-wider cursor-pointer transition-colors duration-200" aria-label="Go to Home">Home</button>
+        </div> */}
 
-        {!showResults ? (
-          <div>
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">Emotion Questionnaire</h1>
-            <div className="mb-8 p-6 bg-purple-100 rounded-xl shadow-inner">
-              <p className="text-xl font-semibold text-gray-700 mb-4">
-                Question {currentQuestionIndex + 1} of {questions.length}
-              </p>
-              <p className="text-2xl text-gray-900 leading-relaxed">
-                {currentQuestion.text}
-              </p>
-            </div>
-            <div className="space-y-4 mb-8">
-              {currentQuestion.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(currentQuestion.id, option)}
-                  className={`w-full py-3 px-6 rounded-lg text-lg font-medium transition-all duration-300 ease-in-out
-                    ${answers[currentQuestion.id]?.text === option.text
-                      ? 'bg-purple-600 text-white shadow-lg transform scale-105'
-                      : 'bg-purple-200 text-purple-800 hover:bg-purple-300 hover:text-purple-900'
-                    }
-                    focus:outline-none focus:ring-4 focus:ring-purple-300`}
-                >
-                  {option.text}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={goToNextQuestion}
-              disabled={!answers[currentQuestion.id]}
-              className={`w-full py-3 px-8 rounded-xl text-xl font-bold transition-all duration-300 ease-in-out
-                ${answers[currentQuestion.id]
-                  ? 'bg-indigo-600 text-white shadow-xl hover:bg-indigo-700 transform hover:scale-105'
-                  : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                }
-                focus:outline-none focus:ring-4 focus:ring-indigo-300`}
-            >
-              {currentQuestionIndex < questions.length - 1 ? "Next Question" : "Get My Songs!"}
-            </button>
+        {!isLoading && !determinedEmotion && !error && (
+          <form onSubmit={handleSubmit} className="relative z-10">
+            <div className="mb-2 text-sm uppercase tracking-widest text-purple-400">Tell us anything</div>
+            <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text mb-4">How Are You Feeling?</h1>
+            <p className="max-w-xl mx-auto text-gray-300 text-lg mb-8">Describe your mood, and our AI will find the perfect songs for you.</p>
+            <textarea value={userInput} onChange={(e) => setUserInput(e.target.value)} placeholder="e.g., 'I had a long, frustrating day at work' or 'Feeling great and so excited for the weekend!'" className="w-full h-32 p-4 bg-[#0f0f1a] border-2 border-purple-800/60 rounded-lg focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all duration-300 mb-6 text-gray-200 placeholder-gray-500" disabled={isLoading}/>
+            <button type="submit" disabled={!userInput.trim() || isLoading} className={`w-full py-3 px-8 rounded-full text-lg font-bold transition-all duration-300 ease-in-out ${userInput.trim() && !isLoading ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30 hover:bg-purple-700 transform hover:scale-105' : 'bg-gray-700 text-gray-400 cursor-not-allowed'} focus:outline-none focus:ring-4 focus:ring-purple-500/50`}>Get My Songs!</button>
+          </form>
+        )}
+
+        {isLoading && (
+          <div className="relative z-10">
+            <h2 className="text-3xl font-semibold text-purple-400 animate-pulse">{loadingMessage}</h2>
           </div>
-        ) : (
-          <div className="results-section">
-            <h2 className="text-3xl font-bold mb-6 text-gray-800">Your Emotion: <span className="capitalize text-purple-700">{determinedEmotion}</span></h2>
-            <p className="text-xl text-gray-700 mb-8">Here are some song suggestions for you:</p>
+        )}
 
-            {/* YouTube Search Button */}
-            <div className="mb-6">
-              <a
-                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(songSuggestions[determinedEmotion])}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white
-                  ${determinedEmotion === 'happy' ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : ''}
-                  ${determinedEmotion === 'sad' ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' : ''}
-                  ${determinedEmotion === 'angry' ? 'bg-orange-600 hover:bg-orange-700 focus:ring-orange-500' : ''}
-                  ${determinedEmotion === 'neutral' ? 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500' : ''}
-                  focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 ease-in-out`}
-              >
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10 3a7 7 0 00-7 7c0 3.866 3.134 7 7 7s7-3.134 7-7a7 7 0 00-7-7zm0 12a5 5 0 110-10 5 5 0 010 10zm-2-5a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"></path>
-                </svg>
-                Search {determinedEmotion} Songs on YouTube
-              </a>
+        {determinedEmotion && !isLoading && (
+          <div className="results-section relative z-10">
+            <p className="text-lg text-gray-300 mb-2">you're feeling:</p>
+            <h2 className="text-5xl font-extrabold mb-6 capitalize bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text">{determinedEmotion}</h2>
+            
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 mb-6">
+              {spotifyTracks.length > 0 ? (
+                spotifyTracks.map(track => (
+                  <a href={track.external_urls.spotify} target="_blank" rel="noopener noreferrer" key={track.id} className="flex items-center p-3 bg-black bg-opacity-20 rounded-lg hover:bg-opacity-40 transition-all duration-200">
+                    <img src={track.album.images[0]?.url || 'https://placehold.co/64x64/0f0f1a/333?text=?'} alt={track.name} className="w-16 h-16 rounded-md mr-4 object-cover"/>
+                    <div className="text-left">
+                      <p className="font-bold text-white truncate">{track.name}</p>
+                      <p className="text-sm text-gray-400 truncate">{track.artists.map(artist => artist.name).join(', ')}</p>
+                    </div>
+                  </a>
+                ))
+              ) : (
+                !error && <p className="text-gray-400">Could not find songs on Spotify.</p>
+              )}
             </div>
 
-            <button
-              onClick={resetQuiz}
-              className="w-full py-3 px-8 rounded-xl text-xl font-bold bg-purple-600 text-white shadow-xl hover:bg-purple-700 transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300"
-            >
-              Take Quiz Again
-            </button>
+            <button onClick={resetState} className="inline-block w-full max-w-sm py-3 px-8 rounded-full text-lg font-bold border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white transition-all duration-300 ease-in-out">Try Again</button>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center text-red-400 relative z-10">
+            <p className="text-xl mb-6">{error}</p>
+            <button onClick={resetState} className="py-3 px-8 rounded-full text-lg font-bold border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white transition-all duration-300 ease-in-out">Try Again</button>
           </div>
         )}
       </div>

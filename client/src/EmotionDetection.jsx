@@ -159,7 +159,7 @@ const EmotionDetection = () => {
           className="mt-6 w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition"
           onClick={handleQuestionnaireRedirect}
         >
-          Answer Questionnaire
+          Describe Your Mood
         </button>
       </div>
     </div>
