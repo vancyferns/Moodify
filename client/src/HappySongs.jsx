@@ -18,7 +18,7 @@ const HappySongs = () => {
   return (
     <div className="container-fluid bg-light py-5">
       <div className="text-center mb-4">
-        <h2 className="fw-bold">😊Happy Songs For Your Mood</h2>
+        <h2 className="fw-bold mt-5">😊Happy Songs For Your Mood</h2>
       </div>
 
       <div className="row px-4">

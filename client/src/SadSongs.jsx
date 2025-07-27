@@ -20,8 +20,8 @@ const SadSongs = () => {
   return (
     <div className="container-fluid bg-light py-5">
       <div className="text-center mb-4">
-        <h2 className="fw-bold">
-          Sad Songs For Your Mood
+        <h2 className="fw-bold mt-5">
+          😔Sad Songs For Your Mood
         </h2>
       </div>
 

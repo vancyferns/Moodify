@@ -1,4 +1,3 @@
-
 from flask_cors import CORS
 from flask import Flask, request, jsonify
 from deepface import DeepFace
@@ -144,3 +143,5 @@ def analyze():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
