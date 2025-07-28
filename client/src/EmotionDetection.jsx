@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import happyImg from './assets/happy.png';
 import sadImg from './assets/sad.png';
 import angryImg from './assets/angry.png';
+import { API_BASE_URL } from "./config";
 
 const EmotionDetection = () => {
   
@@ -26,7 +27,7 @@ const EmotionDetection = () => {
     formData.append('video', new File([videoBlob], 'recorded.mp4', { type: 'video/mp4' }));
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/analyze', {
+      const response = await fetch(`${ API_BASE_URL }/analyze`, {
         method: 'POST',
         body: formData,
       });

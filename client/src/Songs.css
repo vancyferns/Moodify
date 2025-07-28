@@ -1,46 +1,59 @@
-/* Songs.css */
-.songs-container {
+body {
+  background-color: #121212;
+  color: white;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.song-list {
+  background: linear-gradient(to bottom, #2e0d0d, #121212);
+  padding: 2rem;
   min-height: 100vh;
-  width: 100%;
-  background-color: #f8f9fa;
-  padding-top: 40px;
-  padding-bottom: 40px;
 }
 
-.songs-wrapper {
-  max-width: 900px;
-  width: 100%;
-}
-
-.songs-title {
-  text-align: center;
-  font-weight: bold;
+.song-list h2 {
   font-size: 2rem;
-  color: #343a40;
-  margin-bottom: 2rem;
-}
-
-.songs-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: center;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-transform: capitalize;
 }
 
 .song-card {
-  max-width: 700px;
-  margin: 0 auto 1.5rem auto;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+  display: grid;
+  grid-template-columns: 50px 1fr 1fr 80px 100px;
+  align-items: center;
+  background-color: #181818;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  transition: background 0.3s;
 }
 
-@media (min-width: 576px) {
-  .song-card {
-    width: 45%;
-  }
+.song-card:hover {
+  background-color: #282828;
 }
 
-@media (min-width: 768px) {
-  .song-card {
-    width: 30%;
-  }
+.song-card img {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.song-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.song-card p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #aaa;
+}
+
+audio {
+  width: 100px;
 }

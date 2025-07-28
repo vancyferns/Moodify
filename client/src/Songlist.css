@@ -1,0 +1,90 @@
+body {
+  background-color: #121212;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.spotify-player {
+  padding: 2rem;
+  background: linear-gradient(to bottom, #2e0d0d, #121212);
+  min-height: 100vh;
+}
+
+.spotify-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.playlist-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  margin-top: 1rem;
+}
+
+.spotify-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.play-btn {
+  background-color: #1db954;
+  color: black;
+  border: none;
+  font-size: 2rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.other-controls span {
+  font-size: 1.2rem;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.song-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.song-table th,
+.song-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #333;
+  color: #fff;
+}
+
+.song-table tr:hover {
+  background-color: #1a1a1a;
+}
+
+.spotify-player {
+  font-family: "Segoe UI", sans-serif;
+}
+
+.spotify-player h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+table {
+  border-radius: 20px !important;
+  overflow: hidden;
+}
+
+img {
+  transition: transform 0.2s ease;
+}
+
+img:hover {
+  transform: scale(1.05);
+}
