@@ -3,12 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import happyImg from './assets/happy.png';
 import sadImg from './assets/sad.png';
 import angryImg from './assets/angry.png';
-<<<<<<< HEAD
-import { API_BASE_URL } from "./config";
-=======
 import neutralImg from './assets/neutral.png'; 
 import surpriseImg from './assets/surprise.png'; 
->>>>>>> 2dc6825a7f6c41e909b48a54b941c406ffcc75c9
+import { API_BASE_URL } from "./config";
 
 const EmotionDetection = () => {
   const [result, setResult] = useState(null);

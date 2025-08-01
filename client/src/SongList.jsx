@@ -7,7 +7,7 @@ const SongList = ({ songs, emotion }) => {
 
   return (
     <div
-      className="relative min-h-screen flex flex-col items-center justify-start px-6 py-10 text-white"
+      className="relative min-h-screen flex flex-col items-center justify-start px-6 pt-24 pb-10 text-white"
       style={{
         background: "linear-gradient(to bottom, #0f0f1a, #1a1a2e)",
         backdropFilter: "blur(6px)",
@@ -15,11 +15,11 @@ const SongList = ({ songs, emotion }) => {
       }}
     >
       {/* Glow behind heading */}
-      <div className="absolute top-16 left-1/2 transform -translate-x-1/2 w-80 h-24 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 blur-2xl opacity-50 rounded-full pointer-events-none z-0"></div>
+      <div className="absolute top-12 left-1/2 transform -translate-x-1/2 w-80 h-24 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 blur-2xl opacity-50 rounded-full pointer-events-none z-0"></div>
 
       {/* Title */}
-      <header className="mb-6 text-center z-10">
-        <h1 className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text mb-4">
+      <header className="mb-8 text-center z-10">
+        <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text">
           {emotionTitle}
         </h1>
       </header>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import SongList from "./SongList"; // make sure this import path is correct
+import SongList from "./SongList";
 import { API_BASE_URL } from "./config";
 
 const AngrySongs = () => {
@@ -13,11 +13,7 @@ const AngrySongs = () => {
       .catch((error) => console.error("Error fetching angry songs:", error));
   }, []);
 
-  return (
-    <div className="bg-dark text-white min-vh-100 py-5">
-      <SongList songs={songs} emotion="Angry" />
-    </div>
-  );
+  return <SongList songs={songs} emotion="Angry" />;
 };
 
 export default AngrySongs;
