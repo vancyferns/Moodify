@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()  # load from .env file
 
 app = Flask(__name__)
-CORS(app)  
+CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
+# CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "https://silver-winner-qwjq7r76wqg2xwj7-5000.app.github.dev"]}}, supports_credentials=True)
 
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["MONGO_URI"] = os.getenv("MONGO_URI")

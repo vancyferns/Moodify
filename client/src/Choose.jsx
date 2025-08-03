@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Video, FileText } from "lucide-react";
@@ -6,86 +7,74 @@ const Choose = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white font-sans flex items-center justify-center px-6">
-      <section className="text-center max-w-3xl w-full">
+    <div className="relative min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white font-sans flex items-center justify-center px-6 overflow-hidden">
+      
+      {/* Glowing Background Bubble */}
+      <div className="absolute w-[500px] h-[500px] rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-pink-500 opacity-30 blur-3xl animate-float z-0"></div>
+
+      {/* Main Section */}
+      <section className="text-center max-w-2xl w-full z-10">
         {/* Top Caption */}
-        <div className="text-sm uppercase tracking-widest text-purple-400 animate-pulse mb-4">
-          🎭 Discover How You Feel
+        <div className="text-xs uppercase tracking-widest text-purple-400 animate-pulse mb-3">
+          🎭 Find Your Mood Match
         </div>
 
-        {/* Heading */}
-        <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
-          How Do You Want to Detect Your Emotion
+        {/* Typewriter Heading */}
+        <h1 className="typing-effect text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
+          Start Your Mood Journey
         </h1>
 
-        {/* Buttons Side by Side */}
+        {/* Subtext */}
+        <p className="text-sm text-gray-400 mb-8">
+          Select your preferred method to begin your emotion-powered music journey.
+        </p>
+
+        {/* Buttons */}
         <div className="flex flex-col md:flex-row justify-center items-center gap-6">
           <button
             onClick={() => navigate("/emotion-detection")}
-            className="w-64 bg-gradient-to-r from-blue-200 via-pink-300 to-purple-300 px-4 py-3 rounded-full hover:from-purple-600 hover:to-blue-600 hover:text-white transition text-purple-900 font-semibold flex items-center justify-center gap-2 shadow-lg"
+            className="w-64 bg-[#2d213f] text-white px-5 py-4 rounded-2xl shadow-lg hover:bg-[#b388eb] transition-all duration-300 flex items-center justify-center gap-2 backdrop-blur-sm hover:scale-[1.03]"
           >
-            <Video className="w-5 h-5" />
-            <span>Use Video</span>
+            <Video className="w-4 h-4" />
+            <span className="text-sm font-large">Video</span>
           </button>
 
           <button
             onClick={() => navigate("/questionnaire")}
-            className="w-64 bg-gradient-to-r from-blue-200 via-pink-300 to-purple-300 px-4 py-3 rounded-full hover:from-purple-600 hover:to-blue-600 hover:text-white transition text-purple-900 font-semibold flex items-center justify-center gap-2 shadow-lg"
+            className="w-64 bg-[#2d213f] text-white px-5 py-4 rounded-2xl shadow-lg hover:bg-[#b388eb] transition-all duration-300 flex items-center justify-center gap-2 backdrop-blur-sm hover:scale-[1.03]"
           >
-            <FileText className="w-5 h-5" />
-            <span>Answer Questionnaire</span>
+            <FileText className="w-4 h-4" />
+            <span className="text-sm font-large">Questionnaire</span>
           </button>
         </div>
       </section>
 
-      {/* Neon Background Glow */}
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-96 h-32 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 blur-3xl opacity-70 rounded-full"></div>
+      {/* Embedded Styling */}
+      <style>{`
+        @keyframes typing {
+          from { width: 0 }
+          to { width: 100% }
+        }
+        @keyframes blink {
+          50% { border-color: transparent }
+        }
+        .typing-effect {
+          overflow: hidden;
+          white-space: nowrap;
+          border-right: 2px solid #C084FC;
+          width: 0;
+          animation: typing 3s steps(30, end) forwards, blink 1s step-end infinite;
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0) }
+          50% { transform: translateY(-20px) }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };
 
 export default Choose;
-// import React from "react";
-// import { useNavigate } from "react-router-dom";
-// import { Video , FileText} from "lucide-react"
-
-// const Choose = () => {
-//   const navigate = useNavigate();
-
-//   return (
-//     <div className="relative min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white font-sans flex items-center justify-center px-6">
-//       <section className="text-center">
-//         {/* Top Caption */}
-//         <div className="text-sm uppercase tracking-widest text-purple-400 animate-pulse mb-4">
-//           🎭 Discover How You Feel
-//         </div>
-       
-//          {/* Heading */}
-//         <h1 className="text-4xl md:text-5xl font-extrabold text-white">
-//           Choose How You Want to Detect Emotion
-//         </h1>
-
-//         {/* Buttons */}
-//         <div className="flex flex-col items-center gap-y-4 mt-12">
-//           <button
-//             onClick={() => navigate("/emotion-detection")}
-//             className="w-74 bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 px-6 py-3 rounded-full hover:from-purple-600 hover:to-blue-600 hover:text-white transition text-purple-900 font-semibold flex flex-col items-center"
-//           > 
-//            <Video className="w-4 h-4"/><span>Use Video (Record Live / Upload)</span>
-//           </button>
-//           <button
-//             onClick={() => navigate("/questionnaire")}
-//             className="w-74 bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 px-6 py-3 rounded-full hover:from-purple-600 hover:to-blue-600 hover:text-white transition text-purple-900 font-semibold flex flex-col items-center"
-//           >
-//            <FileText className="w-4 h-4"/><span>Answer Questionnaire</span>
-//           </button>
-//         </div>
-//       </section>
-
-//       {/* Neon Background Glow */}
-//       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-96 h-32 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 blur-3xl opacity-70 rounded-full"></div>
-//     </div>
-//   );
-// };
-
-// export default Choose;
