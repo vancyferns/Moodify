@@ -1,5 +1,4 @@
 # app/__init__.py
-
 from flask_cors import CORS
 import os
 from flask import Flask
