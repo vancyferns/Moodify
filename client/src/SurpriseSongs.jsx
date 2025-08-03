@@ -8,7 +8,7 @@ const SurpriseSongs = () => {
 
   useEffect(() => {
     axios
-      .get(`${API_BASE_URL}/api/songs/surprise`)
+      .get(`${API_BASE_URL}/api/songs/surprised`)
       .then((response) => setSongs(response.data.songs))
       .catch((error) => console.error("Error fetching surprise songs:", error));
   }, []);

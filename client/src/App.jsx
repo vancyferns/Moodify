@@ -49,6 +49,7 @@ import SadSongs from './SadSongs';
 import AngrySongs from './AngrySongs';
 import HappySongs from './HappySongs';
 import SurpriseSongs from './SurpriseSongs';
+import NeutralSongs from './NeutralSongs';
 import EmotionQuestionnaire from './components/EmotionQuestionnaire';
 import LandingPage from './LandingPage';
 import Navbar from './components/Navbar';
@@ -70,7 +71,8 @@ function App() {
           <Route path="/angry-songs" element={<AngrySongs />} />
           <Route path="/sad-songs" element={<SadSongs />} />
           <Route path="/happy-songs" element={<HappySongs />} />
-          <Route path="/surprise-songs" element={<SurpriseSongs />} />
+                     <Route path="/surprised-songs" element={<SurpriseSongs />} />
+                                          <Route path="/neutral-songs" element={<NeutralSongs />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/about" element={<AboutUs />} /> {/* ✅ NEW ROUTE */}
         </Routes>
