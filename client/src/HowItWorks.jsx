@@ -57,8 +57,9 @@ export default function HowItWorks() {
     How It Works
   </span>
 </h1>
-        <p className="text-lg sm:text-xl text-gray-300 mb-10">
-          Discover the magic behind Moodify in four beautifully simple steps
+        <p className="text-lg sm:text-xl text-gray-300 mb-10 leading-snug text-center">
+        <span className="block sm:inline">Discover the magic behind Moodify in four</span>{' '}
+        <span className="block sm:inline">beautifully simple steps</span>
         </p>
         <button className="bg-[#A855F7] text-white font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-xl hover:bg-[#9333EA] transition duration-300">
           Try it now

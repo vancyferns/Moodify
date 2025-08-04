@@ -152,10 +152,17 @@ function EmotionQuestionnaire() {
   };
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-black text-white p-4 font-sans">
       <div className="relative bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-blue-500/10 w-full max-w-xl text-center mx-auto my-12 p-8">
         <div className="absolute -top-16 -left-16 w-64 h-64 bg-blue-600 blur-3xl opacity-20 rounded-full animate-pulse"></div>
         <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-indigo-600 blur-3xl opacity-20 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+=======
+    <div className="min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white pt-[100px] px-4 pb-8 flex justify-center items-start relative z-0">
+      <div className="relative bg-[#1a1a2e] bg-opacity-60 backdrop-blur-md border border-purple-800/50 p-8 rounded-2xl shadow-2xl w-full max-w-2xl text-center">
+        <div className="absolute -top-10 -left-10 w-48 h-48 bg-purple-500 blur-3xl opacity-30 rounded-full"></div>
+        <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-blue-500 blur-3xl opacity-30 rounded-full"></div>
+>>>>>>> c70bf7b (Update frontend components and sync with main)
 
         {!isLoading && !emotionResult && !error && (
           <div className="relative z-10">
