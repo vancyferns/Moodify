@@ -34,6 +34,12 @@ const PlaybackSpeedSelector = ({ playbackRate, onChangeSpeed }) => {
           display: "inline-block",
         }}
         aria-label={`Playback speed ${playbackRate}x. Click to change speed`}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setDropdownOpen(!dropdownOpen);
+          }
+        }}
       >
         {playbackRate}x <span style={{ fontSize: "0.7em" }}>▼</span>
       </div>
@@ -45,6 +51,8 @@ const PlaybackSpeedSelector = ({ playbackRate, onChangeSpeed }) => {
             backgroundColor: "rgba(0,0,0,0.9)",
             userSelect: "none",
           }}
+          role="listbox"
+          aria-label="Playback speed options"
         >
           {speedOptions.map((speed) => (
             <div
@@ -242,6 +250,7 @@ const SongList = () => {
           className="songlist-bottom-player fixed bottom-0 left-0 w-full bg-gray-900 text-white px-6 py-3 flex flex-col gap-2 shadow-lg z-50"
         >
           <div className="flex items-center gap-6 justify-start w-full">
+            {/* Song info */}
             <div className="flex items-center gap-4 max-w-xs whitespace-nowrap overflow-hidden">
               <img
                 src={currentSong.song_image || "/default-cover.png"}
@@ -258,6 +267,7 @@ const SongList = () => {
               </div>
             </div>
 
+            {/* Playback controls */}
             <div className="flex items-center gap-6 ml-auto">
               <button
                 onClick={playPrev}
@@ -280,8 +290,8 @@ const SongList = () => {
               >
                 ⏭
               </button>
-            </div>
 
+            {/* Playback speed dropdown */}
             <PlaybackSpeedSelector playbackRate={playbackRate} onChangeSpeed={onChangeSpeed} />
           </div>
 
