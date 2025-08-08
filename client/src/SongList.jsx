@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from 'react-router-dom';
 import Footer from "./components/Footer"; // Your footer component
 import "./Songlist.css";
 
+// PlaybackSpeedSelector component remains the same...
 const PlaybackSpeedSelector = ({ playbackRate, onChangeSpeed }) => {
   const speedOptions = [0.75, 1, 1.25, 1.5, 1.75, 2];
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest(".speed-selector")) {
@@ -22,7 +23,6 @@ const PlaybackSpeedSelector = ({ playbackRate, onChangeSpeed }) => {
       className="speed-selector relative text-white cursor-pointer select-none"
       style={{ userSelect: "none" }}
     >
-      {/* Current speed display */}
       <div
         className="px-2 py-1"
         onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -37,8 +37,6 @@ const PlaybackSpeedSelector = ({ playbackRate, onChangeSpeed }) => {
       >
         {playbackRate}x <span style={{ fontSize: "0.7em" }}>▼</span>
       </div>
-
-      {/* Dropdown list */}
       {dropdownOpen && (
         <div
           className="absolute bottom-full left-0 mb-1 rounded shadow-lg z-50"
@@ -81,7 +79,12 @@ const PlaybackSpeedSelector = ({ playbackRate, onChangeSpeed }) => {
   );
 };
 
-const SongList = ({ songs, emotion }) => {
+
+const SongList = () => {
+  // *** RECEIVE DATA FROM NAVIGATION ***
+  const location = useLocation();
+  const { songs = [], emotion = 'Unknown' } = location.state || {};
+
   const [currentIndex, setCurrentIndex] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -92,11 +95,22 @@ const SongList = ({ songs, emotion }) => {
 
   const currentSong = currentIndex !== null ? songs[currentIndex] : null;
 
-  const emotionTitle =
-    emotion.toLowerCase() === "happy" ? "😊 Happy Songs" : `${emotion} Songs`;
+  // Handle case where no songs are passed
+  if (songs.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">No Songs Found</h1>
+          <p className="text-gray-400">There were no songs provided for the "{emotion}" mood.</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Estimate 3 mins per song
-  const totalSeconds = songs.length * 180;
+  const emotionTitle =
+    emotion.toLowerCase() === "happy" ? "😊 Happy Songs" : `${emotion.charAt(0).toUpperCase() + emotion.slice(1)} Songs`;
+
+  const totalSeconds = songs.length * 180; // Estimate 3 mins per song
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   const formattedDuration = `${String(minutes).padStart(2, "0")}:${String(
@@ -133,17 +147,14 @@ const SongList = ({ songs, emotion }) => {
     setIsPlaying(true);
   };
 
-  // Update current time while playing
   const onTimeUpdate = () => {
     if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
   };
 
-  // Update duration when metadata loads
   const onLoadedMetadata = () => {
     if (audioRef.current) setDuration(audioRef.current.duration);
   };
 
-  // Handle seek via slider
   const onSeek = (e) => {
     const time = Number(e.target.value);
     if (audioRef.current) {
@@ -152,7 +163,6 @@ const SongList = ({ songs, emotion }) => {
     }
   };
 
-  // Change playback speed
   const onChangeSpeed = (rate) => {
     setPlaybackRate(rate);
     if (audioRef.current) {
@@ -160,7 +170,6 @@ const SongList = ({ songs, emotion }) => {
     }
   };
 
-  // When currentSong changes, load and play
   useEffect(() => {
     if (audioRef.current && currentSong) {
       audioRef.current.load();
@@ -170,15 +179,14 @@ const SongList = ({ songs, emotion }) => {
       }
       setCurrentTime(0);
     }
-  }, [currentIndex, currentSong, playbackRate]);
+  }, [currentIndex, currentSong, playbackRate, isPlaying]);
 
   return (
     <>
       <div
         className="songlist-container"
-        style={{ paddingBottom: "120px" }} // reserve space for fixed player height
+        style={{ paddingBottom: "120px" }}
       >
-        {/* Emotion Header */}
         <div className="songlist-header">
           <img src={songs[0]?.song_image} alt="Playlist Cover" />
           <div>
@@ -190,7 +198,6 @@ const SongList = ({ songs, emotion }) => {
           </div>
         </div>
 
-        {/* Song Table */}
         <div className="songlist-table-container">
           <table className="songlist-table">
             <thead>
@@ -205,7 +212,7 @@ const SongList = ({ songs, emotion }) => {
             </thead>
             <tbody>
               {songs.map((song, index) => (
-                <tr key={index}>
+                <tr key={index} className={currentIndex === index ? 'playing' : ''}>
                   <td>{index + 1}</td>
                   <td>
                     <img src={song.song_image} alt="cover" />
@@ -218,7 +225,7 @@ const SongList = ({ songs, emotion }) => {
                       onClick={() => handlePlay(index)}
                       className="songlist-play-button"
                     >
-                      Play
+                      {currentIndex === index && isPlaying ? 'Pause' : 'Play'}
                     </button>
                   </td>
                 </tr>
@@ -226,20 +233,15 @@ const SongList = ({ songs, emotion }) => {
             </tbody>
           </table>
         </div>
-
-        {/* Scrollable Footer */}
       </div>
       <Footer />
       <div style={{ width: "100%", height: "100px" }}></div>
 
-      {/* Fixed Bottom Player */}
       {currentSong && (
         <div
           className="songlist-bottom-player fixed bottom-0 left-0 w-full bg-gray-900 text-white px-6 py-3 flex flex-col gap-2 shadow-lg z-50"
         >
-          {/* Top row: Song info and controls */}
           <div className="flex items-center gap-6 justify-start w-full">
-            {/* Song info */}
             <div className="flex items-center gap-4 max-w-xs whitespace-nowrap overflow-hidden">
               <img
                 src={currentSong.song_image || "/default-cover.png"}
@@ -256,7 +258,6 @@ const SongList = ({ songs, emotion }) => {
               </div>
             </div>
 
-            {/* Playback controls */}
             <div className="flex items-center gap-6 ml-auto">
               <button
                 onClick={playPrev}
@@ -281,11 +282,9 @@ const SongList = ({ songs, emotion }) => {
               </button>
             </div>
 
-            {/* Playback speed dropdown */}
             <PlaybackSpeedSelector playbackRate={playbackRate} onChangeSpeed={onChangeSpeed} />
           </div>
 
-          {/* Progress bar */}
           <input
             type="range"
             min={0}
@@ -296,7 +295,6 @@ const SongList = ({ songs, emotion }) => {
             className="w-full h-1 rounded-lg accent-green-400 cursor-pointer"
           />
 
-          {/* Audio element */}
           <audio
             ref={audioRef}
             src={currentSong.song_uri || ""}
