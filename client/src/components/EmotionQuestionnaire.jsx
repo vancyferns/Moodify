@@ -80,6 +80,7 @@ function EmotionQuestionnaire() {
   };
 
   return (
+    // adding this
     <div className="min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white pt-[100px] px-4 pb-8 flex justify-center items-start relative z-0">
       <div className="relative bg-[#1a1a2e] bg-opacity-60 backdrop-blur-md border border-purple-800/50 p-8 rounded-2xl shadow-2xl w-full max-w-4xl text-center">
         <div className="absolute -top-10 -left-10 w-48 h-48 bg-purple-500 blur-3xl opacity-30 rounded-full"></div>
