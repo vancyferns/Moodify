@@ -11,19 +11,13 @@ function EmotionQuestionnaire() {
 
   const [answers, setAnswers] = useState(Array(questions.length).fill(''));
   const [emotionResult, setEmotionResult] = useState(null);
+  const [songs, setSongs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [error, setError] = useState(null);
+  const [showSongs, setShowSongs] = useState(false);
 
   const MIN_ANSWERS_REQUIRED = 3;
-
-  const emotionRoutes = {
-    'happy': 'happy-songs',
-    'sad': 'sad-songs',
-    'angry': 'angry-songs',
-    'surprise': 'energetic-songs',
-    'neutral': 'chill-songs'
-  };
 
   const answeredQuestionsCount = useMemo(() => {
     return answers.filter(answer => answer.trim() !== '').length;
@@ -40,7 +34,7 @@ function EmotionQuestionnaire() {
       'happy': 'text-yellow-300',
       'sad': 'text-blue-400',
       'angry': 'text-red-500',
-      'surprise': 'text-teal-300',
+      'surprised': 'text-teal-300',
       'neutral': 'text-gray-400'
     };
     return colors[emotion] || 'text-indigo-400';
@@ -51,7 +45,7 @@ function EmotionQuestionnaire() {
       'happy': '😊',
       'sad': '😢',
       'angry': '😠',
-      'surprise': '😲',
+      'surprised': '😲',
       'neutral': '😐'
     };
     return emojis[emotion] || '🎭';
@@ -67,47 +61,29 @@ function EmotionQuestionnaire() {
     if (answeredQuestionsCount < MIN_ANSWERS_REQUIRED) return;
 
     const answeredResponses = answers.filter(ans => ans.trim() !== '');
-    
+
     setIsLoading(true);
     setError(null);
     setEmotionResult(null);
+    setSongs([]);
+    setShowSongs(false);
     setLoadingMessage('Analyzing your emotions with AI...');
 
     const apiUrl = 'http://127.0.0.1:5001/predict';
-    const payload = {
-      responses: answeredResponses,
-    };
-
-    // Function to normalize emotion labels.
-    // This maps synonyms to a standard set for consistent UI rendering.
-    const normalizeEmotionLabel = (label) => {
-      const lowerLabel = label.toLowerCase();
-      
-      if (lowerLabel === 'joy') {
-        return 'happy';
-      }
-      if (lowerLabel === 'sadness') { // Added mapping for "sad"
-        return 'sad';
-      }
-      if (lowerLabel === 'suprise') {
-        return 'suprise';
-      }
-      if (lowerLabel === 'neutral') { // Added mapping for "sad"
-        return 'neutral';
-      }
-      
-      // This function can be extended to map other synonyms if the backend changes.
-      return lowerLabel;
-    };
+    const payload = { responses: answeredResponses };
 
     try {
-      setTimeout(() => {
-        if (isLoading) setLoadingMessage('Processing your emotional patterns...');
-      }, 1500);
+      const loadingSteps = [
+        { msg: 'Processing your emotional patterns...', delay: 1500 },
+        { msg: 'Finding perfect songs for your mood...', delay: 3000 },
+        { msg: 'Almost done! Finalizing results...', delay: 4500 }
+      ];
 
-      setTimeout(() => {
-        if (isLoading) setLoadingMessage('Almost done! Finalizing results...');
-      }, 3000);
+      loadingSteps.forEach(step => {
+        setTimeout(() => {
+          if (isLoading) setLoadingMessage(step.msg);
+        }, step.delay);
+      });
 
       const res = await fetch(apiUrl, {
         method: 'POST',
@@ -122,31 +98,8 @@ function EmotionQuestionnaire() {
 
       const data = await res.json();
 
-      // Create a new data object with normalized emotion labels before setting state
-      const normalizedData = {
-        ...data,
-        primary_emotion: normalizeEmotionLabel(data.primary_emotion),
-        all_emotions: data.all_emotions.map(em => ({
-          ...em,
-          emotion: normalizeEmotionLabel(em.emotion),
-        })),
-      };
-
-      setEmotionResult(normalizedData);
-
-      setTimeout(() => {
-        const primaryEmotion = normalizedData.primary_emotion; // Uses the normalized emotion
-        const route = emotionRoutes[primaryEmotion];
-        
-        if (route) {
-          console.log(`Would navigate to: /${route}`, { 
-            emotionData: normalizedData, 
-            userResponses: answeredResponses 
-          });
-        } else {
-          setError(`We detected "${primaryEmotion}" but don't have songs for this emotion yet.`);
-        }
-      }, 2500);
+      setEmotionResult(data);
+      setSongs(data.songs || []);
 
     } catch (err) {
       console.error("Emotion analysis error:", err);
@@ -159,15 +112,69 @@ function EmotionQuestionnaire() {
   const resetState = () => {
     setAnswers(Array(questions.length).fill(''));
     setEmotionResult(null);
+    setSongs([]);
     setError(null);
     setIsLoading(false);
+    setShowSongs(false);
   };
 
+  const handleShowSongs = () => {
+    setShowSongs(true);
+  };
+
+  const SongCard = ({ song, index }) => (
+    <div className="bg-white/5 border border-white/10 p-4 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <h4 className="text-white font-semibold text-lg group-hover:text-blue-300 transition-colors">
+            {song.song_title || song.title || 'Unknown Title'}
+          </h4>
+          <p className="text-gray-400 text-sm mt-1">
+            {song.artist || 'Unknown Artist'}
+          </p>
+          {song.album && (
+            <p className="text-gray-500 text-xs mt-1">
+              Album: {song.album}
+            </p>
+          )}
+          {song.genre && (
+            <span className="inline-block bg-purple-600/30 text-purple-300 text-xs px-2 py-1 rounded-full mt-2">
+              {song.genre}
+            </span>
+          )}
+          {song.song_uri && (
+            <div className="mt-3">
+              <audio controls className="w-full h-8" style={{ height: '32px' }}>
+                <source src={song.song_uri} type="audio/mpeg" />
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col items-end">
+          <div className="text-gray-500 text-sm mb-2">
+            #{index + 1}
+          </div>
+          {song.song_image && (
+            <img 
+              src={song.song_image} 
+              alt={song.song_title || 'Song cover'} 
+              className="w-16 h-16 rounded-lg object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-<div className="min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white pt-[100px] px-4 pb-8 flex justify-center items-start relative z-0">
-  <div className="relative bg-[#1a1a2e] bg-opacity-60 backdrop-blur-md border border-purple-800/50 p-8 rounded-2xl shadow-2xl w-full max-w-2xl text-center">
-    <div className="absolute -top-10 -left-10 w-48 h-48 bg-purple-500 blur-3xl opacity-30 rounded-full"></div>
-    <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-blue-500 blur-3xl opacity-30 rounded-full"></div>
+    <div className="min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white pt-[100px] px-4 pb-8 flex justify-center items-start relative z-0">
+      <div className="relative bg-[#1a1a2e] bg-opacity-60 backdrop-blur-md border border-purple-800/50 p-8 rounded-2xl shadow-2xl w-full max-w-4xl text-center">
+        <div className="absolute -top-10 -left-10 w-48 h-48 bg-purple-500 blur-3xl opacity-30 rounded-full"></div>
+        <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-blue-500 blur-3xl opacity-30 rounded-full"></div>
 
         {!isLoading && !emotionResult && !error && (
           <div className="relative z-10">
@@ -240,7 +247,7 @@ function EmotionQuestionnaire() {
           <div className="relative z-10 flex flex-col items-center justify-center h-96">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-6"></div>
             <h2 className="text-3xl font-semibold text-white animate-pulse mb-2">{loadingMessage}</h2>
-            <p className="text-gray-400">Harnessing AI to understand your unique emotional state.</p>
+            <p className="text-gray-400">Harnessing AI to understand your unique emotional state and find perfect songs.</p>
           </div>
         )}
 
@@ -284,22 +291,48 @@ function EmotionQuestionnaire() {
               </div>
             </div>
 
-            {emotionResult.keyword_matches && Object.keys(emotionResult.keyword_matches).length > 0 && (
-              <div className="bg-white/5 border border-white/10 p-3 rounded-xl text-left">
-                <h4 className="text-xs font-semibold text-gray-400 mb-2">Keywords Detected:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(emotionResult.keyword_matches).map(([emotion, count]) => (
-                    <span key={emotion} className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full">
-                      {emotion}: {count}
-                    </span>
-                  ))}
+            {songs.length > 0 && (
+              <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-white">
+                    🎵 Songs for Your {emotionResult.primary_emotion} Mood
+                  </h3>
+                  <span className="text-sm text-gray-400">
+                    {songs.length} songs found
+                  </span>
                 </div>
+                
+                {!showSongs ? (
+                  <button
+                    onClick={handleShowSongs}
+                    className="w-full py-3 px-6 bg-green-600 hover:bg-green-500 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                  >
+                    Show My Playlist 🎶
+                  </button>
+                ) : (
+                  <div className="max-h-96 overflow-y-auto space-y-3 custom-scrollbar">
+                    {songs.map((song, index) => (
+                      <SongCard key={index} song={song} index={index} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
-            
-            <p className="text-lg text-gray-300 pt-4 animate-pulse">
-              🎵 Finding the perfect soundtrack for you...
-            </p>
+
+            {songs.length === 0 && !isLoading && (
+              <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+                <p className="text-yellow-400">
+                  No songs found for "{emotionResult.primary_emotion}" emotion in the database.
+                </p>
+              </div>
+            )}
+
+            <button
+              onClick={resetState}
+              className="mt-6 py-2 px-6 border-2 border-blue-500 text-blue-500 rounded-full font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105"
+            >
+              Analyze Again 🔄
+            </button>
           </div>
         )}
 
@@ -317,6 +350,27 @@ function EmotionQuestionnaire() {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(99, 102, 241, 0.5) rgba(255, 255, 255, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(99, 102, 241, 0.5);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(99, 102, 241, 0.7);
+        }
+      `}</style>
     </div>
   );
 }
