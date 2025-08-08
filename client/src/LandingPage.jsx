@@ -1,6 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import Footer from "./components/Footer"
+import React, { useRef } from "react";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -36,8 +37,11 @@ const LandingPage = () => {
             Learn more
           </button>
         </div>
+
       </section>
+
     </div>
+    
   );
 };
 

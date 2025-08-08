@@ -57,3 +57,22 @@ body {
 audio {
   width: 100px;
 }
+/* Bottom Music Player */
+.songlist-bottom-player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+/* Add padding to avoid content being hidden behind fixed player */
+.songlist-container {
+  padding-bottom: 6rem; /* Adjust based on bottom player height */
+}

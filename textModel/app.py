@@ -5,8 +5,25 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from transformers import pipeline
 import torch
+import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk.tokenize import sent_tokenize, word_tokenize
+import logging
+import numpy as np
+from collections import Counter
+import string
+from pymongo import MongoClient
+# ---------------------------
+# MongoDB Atlas Connection
+# ---------------------------
+MONGO_URI = "mongodb+srv://soniyavitkar2712:soniya_27@cluster0.slai2ew.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+client = MongoClient(MONGO_URI)
+db = client["moodify_db"]
+songs_collection = db["songs_by_emotion"]
 
-# --- Basic Setup ---
+# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -75,7 +92,7 @@ def health_check():
         'device': device
     })
 
-@app.route('/predict', methods=['POST'])
+@app.route('/text_emotion/predict', methods=['POST'])
 def predict_emotion():
     """
     Predicts a single, primary emotion from the allowed set.
@@ -93,8 +110,118 @@ def predict_emotion():
         if 'responses' in data:
             text = combine_responses(data.get('responses', []))
         else:
-            return jsonify({'error': 'Invalid input. The "responses" field is required.'}), 400
+            return jsonify({
+                'error': 'Invalid input. Provide either "text" or "responses" field'
+            }), 400
 
+        if not text or not text.strip():
+            return jsonify({'error': 'Text is empty after processing'}), 400
+
+        # Use enhanced ensemble prediction
+        use_ensemble = data.get('use_ensemble', True)
+        
+        if use_ensemble:
+            results = ensemble_prediction_enhanced(text)
+        else:
+            processed_text = preprocess_text_minimal(text)
+            results = emotion_classifier(processed_text)
+        
+        if not results:
+            return jsonify({'error': 'Failed to get emotion predictions'}), 500
+
+        # Get enhanced keyword analysis
+        keyword_emotions, context_info = analyze_emotion_keywords_enhanced(text)
+        
+        # Process results with contextual boosting
+        emotions_with_scores = []
+        primary_emotion = None
+        max_score = 0
+        
+        for result in results[0]:
+            emotion = result['label'].lower()
+            score = result['score']
+            
+            # Apply contextual boosting
+            if emotion in keyword_emotions:
+                # More sophisticated boosting based on context
+                keyword_boost = min(keyword_emotions[emotion] * 0.08, 0.25)  # Max 25% boost
+                
+                # Additional boost for achievement context in joy/happiness
+                if emotion in ['joy', 'happiness'] and context_info['has_achievement']:
+                    keyword_boost += 0.15  # Strong boost for achievements
+                
+                # Additional boost for future positive events
+                if emotion in ['joy', 'happiness'] and context_info['has_future_positive']:
+                    keyword_boost += 0.10
+                
+                score = min(score + keyword_boost, 1.0)
+            
+            emotions_with_scores.append({
+                'emotion': emotion,
+                'confidence': round(score, 4)
+            })
+            
+            if score > max_score:
+                max_score = score
+                primary_emotion = emotion
+
+        # Sort by confidence score
+        emotions_with_scores.sort(key=lambda x: x['confidence'], reverse=True)
+        
+        # Calculate confidence adjustment
+        confidence_adjustment = 1.0
+        word_count = len(text.split())
+        
+        # Adjust confidence based on text richness and context
+        if word_count < 5:
+            confidence_adjustment = 0.7
+        elif word_count > 50:
+            confidence_adjustment = 1.1
+        
+        # Boost confidence if we have strong contextual indicators
+        if context_info['has_achievement'] or context_info['has_future_positive']:
+            confidence_adjustment += 0.1
+        
+        if context_info['intensity_count'] > 2:
+            confidence_adjustment += 0.05
+        
+        final_confidence = min(max_score * confidence_adjustment, 1.0)
+        
+        return jsonify({
+            'primary_emotion': primary_emotion,
+            'confidence': round(final_confidence, 4),
+            'all_emotions': emotions_with_scores,
+            'keyword_matches': keyword_emotions,
+            'context_analysis': {
+                'has_achievement_context': context_info['has_achievement'],
+                'has_future_positive_events': context_info['has_future_positive'],
+                'intensity_modifiers': context_info['intensity_count'],
+                'achievement_phrases': context_info.get('achievement_matches', [])
+            },
+            'text_analysis': {
+                'word_count': word_count,
+                'confidence_adjustment': round(confidence_adjustment, 2),
+                'ensemble_used': use_ensemble
+            },
+            'original_text_preview': text[:150] + ('...' if len(text) > 150 else '')
+        })
+
+    except Exception as e:
+        logger.error(f"Error in prediction: {e}")
+        return jsonify({
+            'error': f'Prediction failed: {str(e)}'
+        }), 500
+
+@app.route('/test', methods=['POST'])
+def test_emotion():
+    """Test endpoint for debugging emotion detection"""
+    if not emotion_classifier:
+        return jsonify({'error': 'Model is not loaded'}), 500
+    
+    try:
+        data = request.get_json()
+        text = data.get('text', '')
+        
         if not text:
             return jsonify({'error': 'No text to analyze after processing responses.'}), 400
 
