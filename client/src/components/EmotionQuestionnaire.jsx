@@ -7,8 +7,6 @@ function EmotionQuestionnaire() {
     "How are you feeling physically right now?",
     "What are you looking forward to (or not looking forward to)?",
     "If you could describe your current mood in a few words, what would they be?",
-    // "Is there anything that's been bothering or exciting you recently?",
-    // "How would you rate your energy level and why?"
   ];
 
   const [answers, setAnswers] = useState(Array(questions.length).fill(''));
@@ -20,16 +18,10 @@ function EmotionQuestionnaire() {
   const MIN_ANSWERS_REQUIRED = 3;
 
   const emotionRoutes = {
-    'joy': 'happy-songs',
-    'happiness': 'happy-songs',
     'happy': 'happy-songs',
-    'sadness': 'sad-songs',
     'sad': 'sad-songs',
-    'anger': 'angry-songs',
     'angry': 'angry-songs',
-    'fear': 'calm-songs',
     'surprise': 'energetic-songs',
-    'disgust': 'calm-songs',
     'neutral': 'chill-songs'
   };
 
@@ -45,16 +37,10 @@ function EmotionQuestionnaire() {
 
   const getEmotionColor = (emotion) => {
     const colors = {
-      'joy': 'text-yellow-300',
-      'happiness': 'text-yellow-300',
       'happy': 'text-yellow-300',
-      'sadness': 'text-blue-400',
       'sad': 'text-blue-400',
-      'anger': 'text-red-500',
       'angry': 'text-red-500',
-      'fear': 'text-indigo-400',
       'surprise': 'text-teal-300',
-      'disgust': 'text-lime-500',
       'neutral': 'text-gray-400'
     };
     return colors[emotion] || 'text-indigo-400';
@@ -62,24 +48,18 @@ function EmotionQuestionnaire() {
 
   const getEmotionEmoji = (emotion) => {
     const emojis = {
-      'joy': '😊',
-      'happiness': '😊',
       'happy': '😊',
-      'sadness': '😢',
       'sad': '😢',
-      'anger': '😠',
       'angry': '😠',
-      'fear': '😰',
       'surprise': '😲',
-      'disgust': '🤢',
       'neutral': '😐'
     };
     return emojis[emotion] || '🎭';
   };
 
   const getConfidenceColor = (confidence) => {
-    if (confidence >= 0.8) return 'text-green-400';
-    if (confidence >= 0.6) return 'text-yellow-400';
+    if (confidence >= 0.75) return 'text-green-400';
+    if (confidence >= 0.5) return 'text-yellow-400';
     return 'text-orange-400';
   };
 
@@ -96,7 +76,28 @@ function EmotionQuestionnaire() {
     const apiUrl = 'http://127.0.0.1:5001/predict';
     const payload = {
       responses: answeredResponses,
-      use_ensemble: true
+    };
+
+    // Function to normalize emotion labels.
+    // This maps synonyms to a standard set for consistent UI rendering.
+    const normalizeEmotionLabel = (label) => {
+      const lowerLabel = label.toLowerCase();
+      
+      if (lowerLabel === 'joy') {
+        return 'happy';
+      }
+      if (lowerLabel === 'sadness') { // Added mapping for "sad"
+        return 'sad';
+      }
+      if (lowerLabel === 'suprise') {
+        return 'suprise';
+      }
+      if (lowerLabel === 'neutral') { // Added mapping for "sad"
+        return 'neutral';
+      }
+      
+      // This function can be extended to map other synonyms if the backend changes.
+      return lowerLabel;
     };
 
     try {
@@ -120,15 +121,26 @@ function EmotionQuestionnaire() {
       }
 
       const data = await res.json();
-      setEmotionResult(data);
+
+      // Create a new data object with normalized emotion labels before setting state
+      const normalizedData = {
+        ...data,
+        primary_emotion: normalizeEmotionLabel(data.primary_emotion),
+        all_emotions: data.all_emotions.map(em => ({
+          ...em,
+          emotion: normalizeEmotionLabel(em.emotion),
+        })),
+      };
+
+      setEmotionResult(normalizedData);
 
       setTimeout(() => {
-        const primaryEmotion = data.primary_emotion.toLowerCase();
+        const primaryEmotion = normalizedData.primary_emotion; // Uses the normalized emotion
         const route = emotionRoutes[primaryEmotion];
         
         if (route) {
           console.log(`Would navigate to: /${route}`, { 
-            emotionData: data, 
+            emotionData: normalizedData, 
             userResponses: answeredResponses 
           });
         } else {
