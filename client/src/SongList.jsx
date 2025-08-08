@@ -34,6 +34,12 @@ const PlaybackSpeedSelector = ({ playbackRate, onChangeSpeed }) => {
           display: "inline-block",
         }}
         aria-label={`Playback speed ${playbackRate}x. Click to change speed`}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setDropdownOpen(!dropdownOpen);
+          }
+        }}
       >
         {playbackRate}x <span style={{ fontSize: "0.7em" }}>▼</span>
       </div>
@@ -47,6 +53,8 @@ const PlaybackSpeedSelector = ({ playbackRate, onChangeSpeed }) => {
             backgroundColor: "rgba(0,0,0,0.9)",
             userSelect: "none",
           }}
+          role="listbox"
+          aria-label="Playback speed options"
         >
           {speedOptions.map((speed) => (
             <div
@@ -239,8 +247,8 @@ const SongList = ({ songs, emotion }) => {
         >
           {/* Top row: Song info and controls */}
           <div className="flex items-center gap-6 justify-start w-full">
-            {/* Song info */}
-            <div className="flex items-center gap-4 max-w-xs whitespace-nowrap overflow-hidden">
+            {/* Left info */}
+            <div className="left-info flex items-center gap-4 max-w-xs whitespace-nowrap overflow-hidden">
               <img
                 src={currentSong.song_image || "/default-cover.png"}
                 alt="cover"
@@ -256,8 +264,8 @@ const SongList = ({ songs, emotion }) => {
               </div>
             </div>
 
-            {/* Playback controls */}
-            <div className="flex items-center gap-6 ml-auto">
+            {/* Center controls + speed */}
+            <div className="center-controls flex items-center gap-6 ml-auto">
               <button
                 onClick={playPrev}
                 className="songlist-control-button text-2xl hover:text-green-400"
@@ -279,10 +287,10 @@ const SongList = ({ songs, emotion }) => {
               >
                 ⏭
               </button>
-            </div>
 
-            {/* Playback speed dropdown */}
-            <PlaybackSpeedSelector playbackRate={playbackRate} onChangeSpeed={onChangeSpeed} />
+              {/* Playback speed dropdown */}
+              <PlaybackSpeedSelector playbackRate={playbackRate} onChangeSpeed={onChangeSpeed} />
+            </div>
           </div>
 
           {/* Progress bar */}
