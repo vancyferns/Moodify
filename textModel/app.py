@@ -13,6 +13,14 @@ import logging
 import numpy as np
 from collections import Counter
 import string
+from pymongo import MongoClient
+# ---------------------------
+# MongoDB Atlas Connection
+# ---------------------------
+MONGO_URI = "mongodb+srv://soniyavitkar2712:soniya_27@cluster0.slai2ew.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+client = MongoClient(MONGO_URI)
+db = client["moodify_db"]
+songs_collection = db["songs_by_emotion"]
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -355,7 +363,7 @@ def health_check():
         'device': device
     })
 
-@app.route('/predict', methods=['POST'])
+@app.route('/text_emotion/predict', methods=['POST'])
 def predict_emotion():
     """Enhanced emotion prediction with better contextual understanding"""
     if not emotion_classifier:
@@ -416,14 +424,11 @@ def predict_emotion():
             
             # Apply contextual boosting
             if emotion in keyword_emotions:
-                # More sophisticated boosting based on context
-                keyword_boost = min(keyword_emotions[emotion] * 0.08, 0.25)  # Max 25% boost
+                keyword_boost = min(keyword_emotions[emotion] * 0.08, 0.25)
                 
-                # Additional boost for achievement context in joy/happiness
                 if emotion in ['joy', 'happiness'] and context_info['has_achievement']:
-                    keyword_boost += 0.15  # Strong boost for achievements
+                    keyword_boost += 0.15
                 
-                # Additional boost for future positive events
                 if emotion in ['joy', 'happiness'] and context_info['has_future_positive']:
                     keyword_boost += 0.10
                 
@@ -438,20 +443,16 @@ def predict_emotion():
                 max_score = score
                 primary_emotion = emotion
 
-        # Sort by confidence score
         emotions_with_scores.sort(key=lambda x: x['confidence'], reverse=True)
         
-        # Calculate confidence adjustment
         confidence_adjustment = 1.0
         word_count = len(text.split())
         
-        # Adjust confidence based on text richness and context
         if word_count < 5:
             confidence_adjustment = 0.7
         elif word_count > 50:
             confidence_adjustment = 1.1
         
-        # Boost confidence if we have strong contextual indicators
         if context_info['has_achievement'] or context_info['has_future_positive']:
             confidence_adjustment += 0.1
         
@@ -459,7 +460,20 @@ def predict_emotion():
             confidence_adjustment += 0.05
         
         final_confidence = min(max_score * confidence_adjustment, 1.0)
-        
+
+        # ⭐⭐ NEW CODE: Fetch songs from MongoDB ⭐⭐
+        songs = list(songs_collection.find({"emotion": primary_emotion}))
+
+        song_list = []
+        for song in songs:
+            song_list.append({
+                "title": song["title"],
+                "artist": song["artist"],
+                "url": song["url"],
+                "cover": song["cover"]
+            })
+
+        # ✅ Return response
         return jsonify({
             'primary_emotion': primary_emotion,
             'confidence': round(final_confidence, 4),
@@ -476,7 +490,8 @@ def predict_emotion():
                 'confidence_adjustment': round(confidence_adjustment, 2),
                 'ensemble_used': use_ensemble
             },
-            'original_text_preview': text[:150] + ('...' if len(text) > 150 else '')
+            'original_text_preview': text[:150] + ('...' if len(text) > 150 else ''),
+            'songs': song_list    # 👈 ADDED songs list
         })
 
     except Exception as e:
@@ -484,6 +499,7 @@ def predict_emotion():
         return jsonify({
             'error': f'Prediction failed: {str(e)}'
         }), 500
+
 
 @app.route('/test', methods=['POST'])
 def test_emotion():
