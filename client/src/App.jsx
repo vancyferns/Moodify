@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import EmotionDetection from './EmotionDetection';
 import SadSongs from './SadSongs';
@@ -12,6 +13,8 @@ import Footer from './components/Footer';
 import Choose from './Choose';
 import HowItWorks from './HowItWorks';
 import AboutUs from './AboutUs';
+// Import the dynamic SongList component
+import SongList from './SongList'; 
 
 function AppContent() {
   const location = useLocation();
@@ -31,11 +34,17 @@ function AppContent() {
           <Route path="/choose" element={<Choose />} />
           <Route path="/emotion-detection" element={<EmotionDetection />} />
           <Route path="/questionnaire" element={<EmotionQuestionnaire />} />
+          
+          {/* Keep your existing static routes */}
           <Route path="/angry-songs" element={<AngrySongs />} />
           <Route path="/happy-songs" element={<HappySongs />} />
           <Route path="/neutral-songs" element={<NeutralSongs />} />
           <Route path="/sad-songs" element={<SadSongs />} />
           <Route path="/surprise-songs" element={<SurpriseSongs />} />
+
+          {/* Add the dynamic route for the questionnaire results */}
+          <Route path="/songlist" element={<SongList />} />
+
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/about" element={<AboutUs />} />
         </Routes>
