@@ -19,10 +19,11 @@ const Choose = () => {
           🎭 Find Your Mood Match
         </div>
 
-        {/* Typewriter Heading */}
-        <h1 className="typing-effect text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
-          Start Your Mood Journey
-        </h1>
+       {/* Typewriter Heading */}
+        <h1 className="font-bold text-white mb-4 leading-snug text-center text-2xl sm:text-3xl md:text-4xl">
+          <span className="block md:hidden animate-fade-in">Start Your Mood Journey</span>
+          <span className="hidden md:inline-block typing-effect">Start Your Mood Journey</span>
+        </h1>        
 
         {/* Subtext */}
         <p className="text-sm text-gray-400 mb-8">
@@ -51,28 +52,40 @@ const Choose = () => {
 
       {/* Embedded Styling */}
       <style>{`
-        @keyframes typing {
-          from { width: 0 }
-          to { width: 100% }
-        }
-        @keyframes blink {
-          50% { border-color: transparent }
-        }
-        .typing-effect {
-          overflow: hidden;
-          white-space: nowrap;
-          border-right: 2px solid #C084FC;
-          width: 0;
-          animation: typing 3s steps(30, end) forwards, blink 1s step-end infinite;
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0) }
-          50% { transform: translateY(-20px) }
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-      `}</style>
+              @keyframes typing {
+               from { width: 0 }
+               to { width: 100% }
+             }
+           
+             @keyframes blink {
+               50% { border-color: transparent }
+             }
+           
+             @keyframes fadeIn {
+               from { opacity: 0 }
+               to { opacity: 1 }
+                        }
+           
+             .typing-effect {
+               white-space: nowrap;
+               overflow: hidden;
+               border-right: 2px solid #C084FC;
+               animation: typing 3s steps(30, end) forwards, blink 1s step-end infinite;
+             }
+           
+              .animate-fade-in {
+               animation: fadeIn 2s ease-in-out forwards;
+             }
+           
+             @keyframes float {
+               0%, 100% { transform: translateY(0) }
+               50% { transform: translateY(-20px) }
+             }
+           
+             .animate-float {
+               animation: float 6s ease-in-out infinite;
+             }           
+         `}</style>
     </div>
   );
 };

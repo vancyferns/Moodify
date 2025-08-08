@@ -18,7 +18,7 @@ model/venv/
 model/__pycache__/
 model/*.pyc
 model/uploads/
-
+textModel/venv
 # === macOS / System Files ===
 .DS_Store
 
