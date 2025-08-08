@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
-import moodifyLogo from "./assets/moodifylogo.jpg"; // Adjust path if needed
+import moodifyLogo from "./assets/moodifylogo.jpg"; 
+import Footer from "./components/Footer";// Adjust path if needed
 
 const team = [
   {
@@ -190,6 +191,7 @@ export default function About() {
           </div>
         </motion.div>
       </div>
+      <Footer/>
     </div>
   );
 }

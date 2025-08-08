@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import Footer from "./components/Footer";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -49,14 +50,14 @@ export default function HowItWorks() {
 
       {/* Heading */}
       <div className="relative z-10 max-w-3xl mb-10">
-       <h1
-  className="text-5xl sm:text-6xl font-extrabold mb-8 mx-auto text-center overflow-hidden"
-  style={{ width: "16ch" }}
->
-  <span className="typing-effect bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-    How It Works
-  </span>
-</h1>
+        <h1
+          className="text-5xl sm:text-6xl font-extrabold mb-8 mx-auto text-center overflow-hidden"
+          style={{ width: "16ch" }}
+        >
+          <span className="typing-effect bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            How It Works
+          </span>
+        </h1>
         <p className="text-lg sm:text-xl text-gray-300 mb-10">
           Discover the magic behind Moodify in four beautifully simple steps
         </p>
@@ -89,29 +90,33 @@ export default function HowItWorks() {
           );
         })}
         <style>{`
-        @keyframes typing {
-          from { width: 0 }
-          to { width: 100% }
-        }
-        @keyframes blink {
-          50% { border-color: transparent }
-        }
-        .typing-effect {
-          overflow: hidden;
-          white-space: nowrap;
-          border-right: 2px solid #C084FC;
-          width: 0;
-          animation: typing 3s steps(10, end) forwards, blink 1s step-end infinite;
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0) }
-          50% { transform: translateY(-20px) }
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-      `}</style>
+          @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+          }
+          @keyframes blink {
+            50% { border-color: transparent }
+          }
+          .typing-effect {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid #C084FC;
+            width: 0;
+            animation: typing 3s steps(10, end) forwards, blink 1s step-end infinite;
+          }
+          @keyframes float {
+            0%, 100% { transform: translateY(0) }
+            50% { transform: translateY(-20px) }
+          }
+          .animate-float {
+            animation: float 6s ease-in-out infinite;
+          }
+        `}</style>
       </div>
+
+      {/* Footer */}
+
     </section>
+
   );
 }
