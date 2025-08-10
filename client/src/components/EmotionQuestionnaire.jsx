@@ -156,7 +156,7 @@ function EmotionQuestionnaire() {
             <p className="text-gray-400 text-base mb-6 animate-fadeIn" style={{animationDelay: '0.2s'}}>
               Answer at least <strong className="text-blue-300">{MIN_ANSWERS_REQUIRED} questions</strong> for accurate analysis.
             </p>
-
+                {/* Improved UI */}
             <div className="space-y-3 mb-5 text-left">
               {questions.map((q, idx) => (
                 <div key={idx} className="group animate-slideUp" style={{animationDelay: `${0.1 * idx}s`}}>
