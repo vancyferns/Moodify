@@ -51,13 +51,13 @@ export default function HowItWorks() {
       {/* Heading */}
       <div className="relative z-10 max-w-3xl mb-10">
         <h1
-          className="text-5xl sm:text-6xl font-extrabold mb-8 mx-auto text-center overflow-hidden"
-          style={{ width: "16ch" }}
-        >
-          <span className="typing-effect bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-            How It Works
-          </span>
-        </h1>
+  className="text-5xl sm:text-6xl font-extrabold mb-8 mx-auto text-center overflow-hidden"
+>
+  <span className="typing-effect bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+    How It Works
+  </span>
+</h1>
+
         <p className="text-lg sm:text-xl text-gray-300 mb-10 leading-snug text-center">
         <span className="block sm:inline">Discover the magic behind Moodify in four</span>{' '}
         <span className="block sm:inline">beautifully simple steps</span>
@@ -91,20 +91,7 @@ export default function HowItWorks() {
           );
         })}
         <style>{`
-          @keyframes typing {
-            from { width: 0 }
-            to { width: 100% }
-          }
-          @keyframes blink {
-            50% { border-color: transparent }
-          }
-          .typing-effect {
-            overflow: hidden;
-            white-space: nowrap;
-            border-right: 2px solid #C084FC;
-            width: 0;
-            animation: typing 3s steps(10, end) forwards, blink 1s step-end infinite;
-          }
+          
           @keyframes float {
             0%, 100% { transform: translateY(0) }
             50% { transform: translateY(-20px) }
@@ -112,6 +99,21 @@ export default function HowItWorks() {
           .animate-float {
             animation: float 6s ease-in-out infinite;
           }
+            @keyframes typing {
+  from { width: 0 }
+  to { width: 12ch } /* match number of characters, including spaces */
+}
+@keyframes blink {
+  50% { border-color: transparent }
+}
+.typing-effect {
+  display: inline-block; /* needed for width animation */
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid #C084FC;
+  animation: typing 1s steps(10, end) forwards, blink 1s step-end infinite;
+}
+
         `}</style>
       </div>
 
