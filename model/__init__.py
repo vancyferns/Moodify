@@ -18,3 +18,6 @@ mongodb_client = PyMongo(app)
 db = mongodb_client.db
 
 import routes  # this line attaches routes directly
+
+
+
