@@ -35,3 +35,5 @@ textModel/venv
 # === Environment Files ===
 .env
 .env.*
+node_modules/ 
+venv/
