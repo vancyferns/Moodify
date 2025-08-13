@@ -22,33 +22,62 @@ const Navbar = () => {
         <Link to="/songs" className="hover:text-purple-400">Songs</Link>
       </div>
 
-      {/* Hamburger Icon*/}
-      <div className="md:hidden ml-auto ">
-          <button onClick={() => setIsOpen(!isOpen)} className="focus:outline-none bg-transparent">
-          <svg className="w-5 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
-              {isOpen ? (
-                  <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M6 18L18 6M6 6l12 12"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  />
-                 ) : (
-                <path d="M12 5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
-                 )}
-          </svg>
+     {/* Hamburger Icon*/}
+      <div className="md:hidden flex items-center">
+        <button 
+          onClick={() => setIsOpen(!isOpen)} 
+          className="focus:outline-none  bg-transparent p-0 flex items-center justify-center"
+          style={{ height: '2.5rem' , width: "2.5rem"}}
+        >
+          <div className="w-6 h-5 flex flex-col justify-between">
+            <span 
+              className={`block h-0.5 w-full bg-white transition-all duration-300 ${
+                isOpen ? 'rotate-45 translate-y-2' : ''
+              }`}
+            ></span>
+            <span 
+              className={`block h-0.5 w-full bg-white transition-all duration-300 ${
+                isOpen ? 'opacity-0' : 'opacity-100'
+              }`}
+            ></span>
+            <span 
+              className={`block h-0.5 w-full bg-white transition-all duration-300 ${
+                isOpen ? '-rotate-45 -translate-y-2' : ''
+              }`}
+            ></span>
+          </div>
         </button>
       </div>
 
+
       {/*Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-16 right-6 bg-[#1a1a2e] shadow-lg rounded-md py-4 px-6 text-sm flex flex-col space-y-4 md:hidden z-50">
-          <Link to="/" onClick={() => setIsOpen(false)} className="hover:text-purple-400">Home</Link>
-          <Link to="/about" onClick={() => setIsOpen(false)} className="hover:text-purple-400">About</Link>
-          <Link to="/how-it-works" onClick={() => setIsOpen(false)} className="hover:text-purple-400">How it works</Link>
-          <Link to="/songs" onClick={() => setIsOpen(false)} className="hover:text-purple-400">Songs</Link>
+          <div className="absolute top-22 left-0 w-full h-[calc(100vh-64px)] 
+          bg-gradient-to-b from-[#0f0f1a] via-[#1a1a2e] to-[#2a2a40] 
+          shadow-lg shadow-purple-900/40
+          flex flex-col items-center pt-16 pb-8 space-y-8 text-xl font-semibold z-40 
+          max-h-[400px] overflow-y-auto"
+          >
+{[
+    { to: "/", label: "Home" },
+    { to: "/about", label: "About" },
+    { to: "/how-it-works", label: "How it works" },
+    { to: "/#contact", label: "Contact" },
+  ].map((link, i) => (
+    <Link
+      key={i}
+      to={link.to}
+      onClick={() => setIsOpen(false)}           
+            className="inline-block px-6 py-2 rounded-full 
+             bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 
+             text-transparent bg-clip-text font-extrabold tracking-wide
+             hover:from-pink-400 hover:via-purple-400 hover:to-indigo-400 
+             hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40
+             transition-all duration-300 ease-out"
+    >
+      {link.label}
+    </Link>
+  ))}
         </div>
       )}
     </nav>
