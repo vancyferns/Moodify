@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AuthProvider } from "./AuthContext";
+import ProtectedRoute from "./ProtectedRoute";
 import EmotionDetection from './EmotionDetection';
 import SadSongs from './SadSongs';
 import AngrySongs from './AngrySongs';
@@ -16,11 +18,15 @@ import AboutUs from './AboutUs';
 // Import the dynamic SongList component
 import SongList from './SongList'; 
 import SongsPage from './SongPage';
+import Signup from "./Signup";
+import Signin from "./Signin";
+import AccountChoice from "./AccountChoice";
+import { Toaster } from "react-hot-toast";
+
 function AppContent() {
   const location = useLocation();
 
-  
-  const footerRoutes = ['/', '/how-it-works'];
+  const footerRoutes = ['/', '/how-it-works', '/about', '/songs'];
   const showFooter = footerRoutes.includes(location.pathname);
 
   return (
@@ -41,9 +47,13 @@ function AppContent() {
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/songs" element={<SongsPage />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/signin" element={<Signin />} />
+          <Route path="/account" element={<AccountChoice />} />
         </Routes>
       </div>
       {showFooter && <Footer />}
+       <Toaster position="top-center" reverseOrder={false} />
     </>
   );
 }
@@ -51,7 +61,9 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }

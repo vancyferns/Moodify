@@ -1,7 +1,8 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-
+import Moodify_logo from "../assets/Moodify_logo3i.png";
+import wavesgif from "../assets/waves22.gif";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -9,8 +10,12 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 w-full z-50 bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] px-6 py-4 flex items-center justify-between text-white">
       {/* Logo */}
       <div className="text-xl font-bold">
-        <Link to="/" className="bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text">
-          🎵 Moodify
+        <Link to="/" className="flex items-center bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text">
+          <img src={Moodify_logo}  
+          alt="Moodify Logo"
+          className="h-8 w-14 object-contain drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]"
+          /> 
+          Moodify
         </Link>
       </div>
 
@@ -20,6 +25,8 @@ const Navbar = () => {
         <Link to="/about" className="hover:text-purple-400">About</Link>
         <Link to="/how-it-works" className="hover:text-purple-400">How it works</Link>
         <Link to="/songs" className="hover:text-purple-400">Songs</Link>
+         
+        <Link to="/account" className="hover:text-purple-400">SignUp / SignIn</Link> 
       </div>
 
      {/* Hamburger Icon*/}
@@ -52,17 +59,26 @@ const Navbar = () => {
 
       {/*Dropdown Menu */}
       {isOpen && (
-          <div className="absolute top-22 left-0 w-full h-[calc(100vh-64px)] 
+          //  <div className="relative min-h-screen text-white bg-gradient-to-b from-[#0f0f1a] via-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center p-6 overflow-hidden">
+          
+
+          <div className="absolute top-21.5 left-0 w-full h-[calc(100vh-64px)] 
           bg-gradient-to-b from-[#0f0f1a] via-[#1a1a2e] to-[#2a2a40] 
           shadow-lg shadow-purple-900/40
           flex flex-col items-center pt-16 pb-8 space-y-8 text-xl font-semibold z-40 
-          max-h-[400px] overflow-y-auto"
+          max-h-[480px] overflow-y-auto"
           >
+                 <img
+                          src={wavesgif}
+                           alt="Background waves"
+                          className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none z-0"
+                  /> 
 {[
     { to: "/", label: "Home" },
     { to: "/about", label: "About" },
     { to: "/how-it-works", label: "How it works" },
-    { to: "/#contact", label: "Contact" },
+    { to: "/songs", label: "Songs" },
+    { to: "/account", label: "SignUp / SignIn" }
   ].map((link, i) => (
     <Link
       key={i}
