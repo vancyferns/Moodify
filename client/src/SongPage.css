@@ -1,8 +1,6 @@
 /* SongPage.css */
 
-.song-title-container {
-  /* These properties are now handled by the .overflowing class */
-}
+
 
 .song-title-container.overflowing {
   overflow: hidden;

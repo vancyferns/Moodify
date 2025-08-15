@@ -11,7 +11,6 @@ import cloudinary.uploader
 from bson.objectid import ObjectId
 
 CORS(app)
-
 # DNN FACE DETECTOR SETUP
 prototxt_path = os.path.join("dnn", "deploy.prototxt.txt")
 caffemodel_path = os.path.join("dnn", "res10_300x300_ssd_iter_140000.caffemodel")
@@ -32,7 +31,7 @@ def get_closest_human_face(frame):
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             x1, y1, x2, y2 = map(int, box)
             x1, y1 = max(0, x1), max(0, y1)
-            x2, y2 = min(w, w), min(h, y2)
+            x2, y2 = min(w, x2), min(h, y2)
 
             face = frame[y1:y2, x1:x2]
             area = (x2 - x1) * (y2 - y1)
@@ -88,7 +87,7 @@ def analyze():
         raw_score = grouped[dominant_emotion]
         total = sum(grouped.values())
         confidence = (raw_score / total) * 100 if total > 0 else 0
-        confidence = max(83.0, min(confidence * 1.2, 98.0))
+        confidence = max(83.0, min(confidence * 1.2, 98.0))  # Boost confidence
 
         # MongoDB fetch
         songs = list(db.songs_by_emotion.find({"emotion": dominant_emotion}))
@@ -106,6 +105,7 @@ def analyze():
     finally:
         if os.path.exists(video_path):
             os.unlink(video_path)
+
 
 @app.route('/api/songs/<emotion>', methods=['GET'])
 def get_songs_by_emotion(emotion):
