@@ -1,154 +1,247 @@
-import React, { useEffect, useMemo, useState } from "react";
-
-const STORAGE_KEY = "moodify:songs";
+import React, { useEffect, useMemo, useState, useRef } from "react";
+import axios from "axios";
+import { API_BASE_URL } from "./config";
+import "./SongPage.css";
 
 const SongPage = () => {
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
   const [mood, setMood] = useState("");
   const [picture, setPicture] = useState(null);
+  const [songFile, setSongFile] = useState(null);
   const [filterMood, setFilterMood] = useState("All");
-
-  const [songs, setSongs] = useState(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [songs, setSongs] = useState([]);
 
   useEffect(() => {
     document.title = "Your Songs — Moodify";
+    fetchSongs();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
-  }, [songs]);
+  const fetchSongs = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_BASE_URL}/api/songs`);
+      let data = Array.isArray(res.data) ? res.data : [];
+      setSongs(data);
+    } catch (err) {
+      console.error("Error fetching songs:", err);
+      setSongs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const canSubmit = useMemo(
-    () => title.trim() && artist.trim() && mood.trim(),
-    [title, artist, mood]
+    () => title.trim() && artist.trim() && mood.trim() && songFile && picture,
+    [title, artist, mood, songFile, picture]
   );
 
   const handlePictureChange = (e) => {
     const file = e.target.files[0];
+    if (file) setPicture(file);
+  };
+
+  const handleSongFileChange = (e) => {
+    const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setPicture(reader.result);
-    reader.readAsDataURL(file);
+
+    if (!["audio/mpeg", "audio/wav"].includes(file.type)) {
+      alert("Please upload a valid MP3 or WAV file.");
+      return;
+    }
+
+    setSongFile(file);
   };
 
-  const addSong = (e) => {
+  const addSong = async (e) => {
     e.preventDefault();
-    if (!canSubmit) return;
-    const newSong = {
-      id: crypto.randomUUID(),
-      title: title.trim(),
-      artist: artist.trim(),
-      mood: mood.trim(),
-      picture: picture || null,
-      createdAt: Date.now(),
-    };
-    setSongs((prev) => [newSong, ...prev]);
-    setTitle("");
-    setArtist("");
-    setMood("");
-    setPicture(null);
-    alert(`Song added: ${newSong.title} by ${newSong.artist}`);
+    if (!canSubmit) {
+      alert("All fields are required.");
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+      formData.append("song_name", title.trim());
+      formData.append("song_artist", artist.trim());
+      formData.append("song_mood", mood.trim());
+      formData.append("song_image", picture);
+      formData.append("song_file", songFile);
+
+      const res = await axios.post(`${API_BASE_URL}/api/songs`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setSongs((prev) => [res.data, ...prev]);
+      setTitle("");
+      setArtist("");
+      setMood("");
+      setPicture(null);
+      setSongFile(null);
+
+      alert(`Song added: ${res.data.song_name} by ${res.data.song_artist}`);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload song.");
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const deleteSong = (id) => {
-    setSongs((prev) => prev.filter((s) => s.id !== id));
-    alert("Song deleted");
+  const deleteSong = async (id) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/api/songs/${id}`);
+      setSongs((prev) => prev.filter((s) => s._id !== id));
+      alert("Song deleted");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete song.");
+    }
   };
 
-  const filteredSongs =
-    filterMood === "All"
+  const filteredSongs = useMemo(() => {
+    if (!Array.isArray(songs)) return [];
+    return filterMood === "All"
       ? songs
-      : songs.filter((song) => song.mood.toLowerCase() === filterMood.toLowerCase());
+      : songs.filter(
+          (song) =>
+            (song.song_mood?.toLowerCase() === filterMood.toLowerCase()) ||
+            (song.emotion?.toLowerCase() === filterMood.toLowerCase())
+        );
+  }, [songs, filterMood]);
+
+  // A new component to handle the conditional marquee
+  const SongTitle = ({ title }) => {
+    const titleRef = useRef(null);
+    const [isOverflowing, setIsOverflowing] = useState(false);
+
+    useEffect(() => {
+      if (titleRef.current) {
+        const checkOverflow = () => {
+          setIsOverflowing(titleRef.current.scrollWidth > titleRef.current.clientWidth);
+        };
+        checkOverflow();
+        window.addEventListener("resize", checkOverflow);
+        return () => window.removeEventListener("resize", checkOverflow);
+      }
+    }, [title]);
+
+    return (
+      <h3
+        ref={titleRef}
+        className={`text-lg font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent song-title-container ${
+          isOverflowing ? 'overflowing' : ''
+        }`}
+      >
+        <span className={isOverflowing ? 'animate-marquee' : ''}>
+          {title}
+        </span>
+      </h3>
+    );
+  };
+
+
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center text-white">
+        Loading songs...
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white px-6 py-12">
-      <section className="max-w-4xl mx-auto">
+      <section className="max-w-5xl mx-auto mt-8">
         {/* Heading */}
-        <div className="text-center mt-10 mb-10">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-3">
+        <div className="text-center mt-10 mb-10 py-4">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-3 ">
             Your Songs
           </h1>
           <p className="text-gray-400">
             Add your favorite tracks with mood and picture.
           </p>
         </div>
-
-        {/* Add Form */}
+        {/* Add Song Form */}
         <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg mb-10">
           <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
             Add a new song
           </h2>
-          <form onSubmit={addSong} className="grid md:grid-cols-5 gap-4">
-            {/* Title */}
-            <div>
-              <label htmlFor="title" className="block text-sm mb-1">Title</label>
+          <form
+            onSubmit={addSong}
+            className="grid grid-cols-1 md:grid-cols-6 gap-4"
+          >
+            {/* Inputs */}
+            <div className="md:col-span-2">
+              <label className="block text-sm mb-1">Title *</label>
               <input
-                id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Song title"
+                required
                 className="w-full px-3 py-2 rounded-md bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
               />
             </div>
-            {/* Artist */}
-            <div>
-              <label htmlFor="artist" className="block text-sm mb-1">Artist</label>
+            <div className="md:col-span-2">
+              <label className="block text-sm mb-1">Artist *</label>
               <input
-                id="artist"
                 value={artist}
                 onChange={(e) => setArtist(e.target.value)}
                 placeholder="Artist"
+                required
                 className="w-full px-3 py-2 rounded-md bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
               />
             </div>
-            {/* Mood */}
-            <div>
-              <label htmlFor="mood" className="block text-sm mb-1">Mood</label>
+            <div className="md:col-span-2">
+              <label className="block text-sm mb-1">Mood *</label>
               <select
-                id="mood"
                 value={mood}
                 onChange={(e) => setMood(e.target.value)}
+                required
                 className="w-full px-3 py-2 rounded-md bg-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
               >
                 <option value="">Select mood</option>
-                <option value="Happy">Happy</option>
-                <option value="Sad">Sad</option>
-                <option value="Angry">Angry</option>
-                <option value="Surprised">Surprised</option>
-                <option value="Neutral">Neutral</option>
+                <option value="happy">Happy</option>
+                <option value="sad">Sad</option>
+                <option value="angry">Angry</option>
+                <option value="surprised">Surprised</option>
+                <option value="neutral">Neutral</option>
               </select>
             </div>
-            {/* Picture */}
-            <div>
-              <label htmlFor="picture" className="block text-sm mb-1">Picture</label>
+            <div className="md:col-span-3">
+              <label className="block text-sm mb-1">Picture *</label>
               <input
-                id="picture"
                 type="file"
                 accept="image/*"
+                required
                 onChange={handlePictureChange}
                 className="w-full text-sm text-gray-300 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:bg-purple-500 file:text-white hover:file:bg-purple-600"
               />
             </div>
-            {/* Submit */}
-            <div className="flex items-end">
+            <div className="md:col-span-3">
+              <label className="block text-sm mb-1">Song File *</label>
+              <input
+                type="file"
+                accept=".mp3,.wav"
+                required
+                onChange={handleSongFileChange}
+                className="w-full text-sm text-gray-300 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:bg-purple-500 file:text-white hover:file:bg-purple-600"
+              />
+            </div>
+            <div className="md:col-span-6 flex items-end">
               <button
                 type="submit"
-                disabled={!canSubmit}
+                disabled={!canSubmit || uploading}
                 className={`w-full px-4 py-2 rounded-md font-semibold transition ${
-                  canSubmit
+                  canSubmit && !uploading
                     ? "bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90"
                     : "bg-gray-500 cursor-not-allowed"
                 }`}
               >
-                Add Song
+                {uploading ? "Uploading..." : "Add Song"}
               </button>
             </div>
           </form>
@@ -157,66 +250,76 @@ const SongPage = () => {
         {/* Mood Filter */}
         {songs.length > 0 && (
           <div className="flex flex-wrap gap-3 justify-center mb-8">
-            {["All", "Happy", "Sad", "Angry", "Surprised", "Neutral"].map((m) => (
-              <button
-                key={m}
-                onClick={() => setFilterMood(m)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  filterMood === m
-                    ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white"
-                    : "bg-white/10 text-gray-300 hover:bg-white/20"
-                }`}
-              >
-                {m}
-              </button>
-            ))}
+            {["All", "happy", "sad", "angry", "surprised", "neutral"].map(
+              (m) => (
+                <button
+                  key={m}
+                  onClick={() => setFilterMood(m)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                    filterMood === m
+                      ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white"
+                      : "bg-white/10 text-gray-300 hover:bg-white/20"
+                  }`}
+                >
+                  {m}
+                </button>
+              )
+            )}
           </div>
         )}
 
         {/* Songs List */}
-        {filteredSongs.length === 0 ? (
-          <div className="text-center text-gray-400 bg-white/10 p-6 rounded-xl">
-            No songs found for "{filterMood}" mood.
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredSongs.map((song) => (
-              <div
-                key={song.id}
-                className="bg-white/10 backdrop-blur-md p-5 rounded-xl shadow-lg flex flex-col justify-between"
-              >
-                <div>
-                  {/* Picture */}
-                  {song.picture && (
-                    <img
-                      src={song.picture}
-                      alt={`${song.title} cover`}
-                      className="w-full h-40 object-cover rounded-md mb-3"
-                    />
-                  )}
-                  {/* Title / Artist */}
-                  <h3 className="text-lg font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-                    {song.title}
-                  </h3>
-                  <p className="text-gray-300">{song.artist}</p>
-                  {/* Mood */}
-                  <p className="text-sm mt-1 text-gray-400 italic">
-                    Mood: {song.mood}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Added {new Date(song.createdAt).toLocaleString()}
-                  </p>
-                </div>
-                <button
-                  onClick={() => deleteSong(song.id)}
-                  className="mt-4 text-sm px-3 py-1 rounded-md bg-red-500 hover:bg-red-600 transition"
+        <div className="pt-6">
+          {filteredSongs.length === 0 ? (
+            <div className="text-center text-gray-400 bg-white/10 p-6 rounded-xl">
+              No songs found for "{filterMood}" mood.
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredSongs.map((song) => (
+                <div
+                  key={song._id}
+                  className="bg-white/10 backdrop-blur-md p-5 rounded-xl shadow-lg flex flex-col justify-between"
                 >
-                  Delete
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+                  <div>
+                    {song.song_image && (
+                      <img
+                        src={song.song_image}
+                        alt={`${song.song_name} cover`}
+                        className="w-full h-40 object-cover rounded-md mb-3"
+                      />
+                    )}
+                    <SongTitle title={song.song_name || song.song_title} />
+                    <p className="text-gray-300">
+                      {song.song_artist || song.artist}
+                    </p>
+                    <p className="text-sm mt-1 text-gray-400 italic">
+                      Mood: {song.song_mood || song.emotion}
+                    </p>
+                    {song.song_uri && (
+                      <audio controls className="w-full mt-3">
+                        <source src={song.song_uri} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                      </audio>
+                    )}
+                    <p className="text-xs text-gray-500 mt-2">
+                      Added{" "}
+                      {song.created_at
+                        ? new Date(song.created_at).toLocaleString()
+                        : ""}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => deleteSong(song._id)}
+                    className="mt-4 text-sm px-3 py-1 rounded-md bg-red-500 hover:bg-red-600 transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     </main>
   );

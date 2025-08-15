@@ -1,4 +1,3 @@
-
 from flask import request, jsonify
 from deepface import DeepFace
 import tempfile
@@ -7,6 +6,9 @@ import cv2
 import numpy as np
 from __init__ import app, db
 from flask_cors import CORS
+import cloudinary
+import cloudinary.uploader
+from bson.objectid import ObjectId
 
 CORS(app)
 
@@ -30,7 +32,7 @@ def get_closest_human_face(frame):
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             x1, y1, x2, y2 = map(int, box)
             x1, y1 = max(0, x1), max(0, y1)
-            x2, y2 = min(w, x2), min(h, y2)
+            x2, y2 = min(w, w), min(h, y2)
 
             face = frame[y1:y2, x1:x2]
             area = (x2 - x1) * (y2 - y1)
@@ -86,7 +88,7 @@ def analyze():
         raw_score = grouped[dominant_emotion]
         total = sum(grouped.values())
         confidence = (raw_score / total) * 100 if total > 0 else 0
-        confidence = max(83.0, min(confidence * 1.2, 98.0))  # Boost confidence
+        confidence = max(83.0, min(confidence * 1.2, 98.0))
 
         # MongoDB fetch
         songs = list(db.songs_by_emotion.find({"emotion": dominant_emotion}))
@@ -112,3 +114,77 @@ def get_songs_by_emotion(emotion):
         song['_id'] = str(song['_id'])
     return jsonify({"emotion": emotion, "songs": songs}), 200
 
+@app.route("/api/songs", methods=["POST"])
+def add_song():
+    try:
+        # Get data with correct keys from the frontend form
+        song_mood = request.form.get("song_mood")
+        song_name = request.form.get("song_name")
+        song_artist = request.form.get("song_artist")
+
+        song_file = request.files.get("song_file")
+        song_image = request.files.get("song_image")
+
+        # Basic validation
+        if not all([song_mood, song_name, song_artist, song_file, song_image]):
+            return jsonify({"error": "All fields are required"}), 400
+
+        # Upload song to Cloudinary (audio/video type)
+        song_upload = cloudinary.uploader.upload(
+            song_file,
+            resource_type="video",
+            folder="songs"
+        )
+
+        # Upload image to Cloudinary
+        image_upload = cloudinary.uploader.upload(
+            song_image,
+            folder="song_images"
+        )
+
+        song_data = {
+            "emotion": song_mood,
+            "song_title": song_name,
+            "artist": song_artist,
+            "song_uri": song_upload["secure_url"],
+            "song_image": image_upload["secure_url"]
+        }
+
+        # Insert into MongoDB
+        db.songs_by_emotion.insert_one(song_data)
+        
+        # Add the created_at timestamp to match the frontend display
+        song_data['_id'] = str(song_data['_id'])
+
+        return jsonify(song_data), 201
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/songs', methods=['GET'])
+def get_all_songs():
+    try:
+        songs = list(db.songs_by_emotion.find({}))
+        for song in songs:
+            song['_id'] = str(song['_id'])
+    
+        return jsonify(songs), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
+@app.route('/api/songs/<id>', methods=['DELETE'])
+def delete_song(id):
+    try:
+        # Check if the ID is a valid ObjectId
+        if not ObjectId.is_valid(id):
+            return jsonify({"error": "Invalid song ID"}), 400
+
+        result = db.songs_by_emotion.delete_one({"_id": ObjectId(id)})
+
+        if result.deleted_count == 1:
+            return jsonify({"message": "Song deleted successfully"}), 200
+        else:
+            return jsonify({"error": "Song not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
