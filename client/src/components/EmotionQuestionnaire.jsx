@@ -70,6 +70,20 @@ function EmotionQuestionnaire() {
 
       const data = await res.json();
 
+      // Save emotion to history
+      if (data.primary_emotion) {
+        const newHistoryEntry = {
+          emotion: data.primary_emotion,
+          timestamp: new Date().toISOString(),
+        };
+
+        // Retrieve existing history, add new entry, and limit to 10
+        const existingHistory = JSON.parse(localStorage.getItem("moodHistory")) || [];
+        const updatedHistory = [newHistoryEntry, ...existingHistory].slice(0, 10);
+        localStorage.setItem("moodHistory", JSON.stringify(updatedHistory));
+      }
+
+
       // Navigate to the song list page and pass the results in the route's state
       navigate('/songlist', {
         state: {

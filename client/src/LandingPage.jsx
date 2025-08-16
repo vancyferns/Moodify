@@ -1,14 +1,40 @@
-import { useNavigate } from "react-router-dom";
-import React from "react";
+// import { useNavigate } from "react-router-dom";
+// import React from "react";
 import { Music, Smile, Zap, ChevronDown } from "lucide-react";
 import wavesgif from "./assets/waves1.gif";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+const [successMsg, setSuccessMsg] = useState("");
+
+useEffect(() => {
+  if (location.state?.message) {
+    setSuccessMsg(location.state.message);
+
+  navigate(location.pathname, { replace: true });
+
+    // auto-hide after 3 seconds
+    const timer = setTimeout(() => setSuccessMsg(""), 3000);
+    return () => clearTimeout(timer);
+  }
+}, [location.navigate]);
+
+
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#0f0f1a] via-[#1a1a2e] to-[#0f0f1a] text-white font-sans overflow-x-hidden">
-      
+      {/* Success Notification */}
+        {successMsg && (
+         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 
+                  bg-green-500 text-white px-6 py-2 rounded shadow-lg 
+                  z-50 animate-fadeIn">
+         {successMsg}
+       </div>
+       )}
+       
       {/* Full-page transparent GIF background */}
       <img
         src={wavesgif}

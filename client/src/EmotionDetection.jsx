@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import happyImg from './assets/happy.png';
 import sadImg from './assets/sad.png';
@@ -20,6 +20,18 @@ const EmotionDetection = () => {
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
+
+  useEffect(() => {
+    if (result?.emotion) {
+      const newMood = {
+        emotion: result.emotion,
+        timestamp: new Date().toISOString(),
+      };
+      const history = JSON.parse(localStorage.getItem("moodHistory")) || [];
+      const newHistory = [newMood, ...history].slice(0, 10);
+      localStorage.setItem("moodHistory", JSON.stringify(newHistory));
+    }
+  }, [result]);
 
   const normalizeEmotion = (emotion) => {
     if (!emotion) return "Unknown";
