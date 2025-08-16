@@ -15,6 +15,7 @@ import Footer from './components/Footer';
 import Choose from './Choose';
 import HowItWorks from './HowItWorks';
 import AboutUs from './AboutUs';
+import History from './History';
 // Import the dynamic SongList component
 import SongList from './SongList'; 
 import SongsPage from './SongPage';
@@ -46,6 +47,7 @@ function AppContent() {
           <Route path="/songlist" element={<SongList />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/history" element={<History />} />
           <Route path="/songs" element={<SongsPage />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
