@@ -25,6 +25,7 @@ const Navbar = () => {
         <Link to="/about" className="hover:text-purple-400">About</Link>
         <Link to="/how-it-works" className="hover:text-purple-400">How it works</Link>
         <Link to="/songs" className="hover:text-purple-400">Songs</Link>
+        <Link to="/history" className="hover:text-purple-400">History</Link>
          
         <Link to="/account" className="hover:text-purple-400">SignUp / SignIn</Link> 
       </div>
@@ -78,6 +79,7 @@ const Navbar = () => {
     { to: "/about", label: "About" },
     { to: "/how-it-works", label: "How it works" },
     { to: "/songs", label: "Songs" },
+    { to: "/history", label: "History" },
     { to: "/account", label: "SignUp / SignIn" }
   ].map((link, i) => (
     <Link
