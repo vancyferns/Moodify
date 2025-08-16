@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import CryptoJS from "crypto-js";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://humble-goldfish-4j9wgq46wr6j3j6xj-5002.app.github.dev";
 const USE_MOCK = (import.meta.env.VITE_USE_MOCK_AUTH || "false") === "true";
 
 // Helper: Deterministic hash using SHA-256

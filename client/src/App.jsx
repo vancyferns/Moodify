@@ -3,11 +3,6 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { AuthProvider } from "./AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
 import EmotionDetection from './EmotionDetection';
-import SadSongs from './SadSongs';
-import AngrySongs from './AngrySongs';
-import HappySongs from './HappySongs';
-import SurpriseSongs from './SurpriseSongs';
-import NeutralSongs from './NeutralSongs';
 import EmotionQuestionnaire from './components/EmotionQuestionnaire';
 import LandingPage from './LandingPage';
 import Navbar from './components/Navbar';
@@ -16,9 +11,8 @@ import Choose from './Choose';
 import HowItWorks from './HowItWorks';
 import AboutUs from './AboutUs';
 import History from './History';
-// Import the dynamic SongList component
-import SongList from './SongList'; 
 import SongsPage from './SongPage';
+import SongList from './SongList';
 import Signup from "./Signup";
 import Signin from "./Signin";
 import AccountChoice from "./AccountChoice";
@@ -39,11 +33,11 @@ function AppContent() {
           <Route path="/choose" element={<Choose />} />
           <Route path="/emotion-detection" element={<EmotionDetection />} />
           <Route path="/questionnaire" element={<EmotionQuestionnaire />} />
-          <Route path="/angry-songs" element={<AngrySongs />} />
-          <Route path="/happy-songs" element={<HappySongs />} />
-          <Route path="/neutral-songs" element={<NeutralSongs />} />
-          <Route path="/sad-songs" element={<SadSongs />} />
-          <Route path="/surprise-songs" element={<SurpriseSongs />} />
+
+          {/* Dynamic route for all emotion-based song lists */}
+          {/* This route will now handle all emotions, e.g., /songs/happy, /songs/sad */}
+          <Route path="/songs/:emotion" element={<SongList />} />
+          
           <Route path="/songlist" element={<SongList />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/about" element={<AboutUs />} />
@@ -52,10 +46,18 @@ function AppContent() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/account" element={<AccountChoice />} />
+
+          {/* Example of a protected route using your component */}
+          {/* <Route
+            path="/some-protected-page"
+            element={<ProtectedRoute />}
+          >
+            <Route index element={<h1>Protected Content</h1>} />
+          </Route> */}
         </Routes>
       </div>
       {showFooter && <Footer />}
-       <Toaster position="top-center" reverseOrder={false} />
+      <Toaster position="top-center" reverseOrder={false} />
     </>
   );
 }

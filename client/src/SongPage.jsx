@@ -22,6 +22,7 @@ const SongPage = () => {
   const fetchSongs = async () => {
     try {
       setLoading(true);
+      // Corrected interpolation syntax
       const res = await axios.get(`${API_BASE_URL}/api/songs`);
       let data = Array.isArray(res.data) ? res.data : [];
       setSongs(data);
@@ -72,6 +73,7 @@ const SongPage = () => {
       formData.append("song_image", picture);
       formData.append("song_file", songFile);
 
+      // Corrected interpolation syntax
       const res = await axios.post(`${API_BASE_URL}/api/songs`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -83,6 +85,7 @@ const SongPage = () => {
       setPicture(null);
       setSongFile(null);
 
+      // Corrected interpolation syntax
       alert(`Song added: ${res.data.song_name} by ${res.data.song_artist}`);
     } catch (err) {
       console.error(err);
@@ -94,6 +97,7 @@ const SongPage = () => {
 
   const deleteSong = async (id) => {
     try {
+      // Corrected interpolation syntax
       await axios.delete(`${API_BASE_URL}/api/songs/${id}`);
       setSongs((prev) => prev.filter((s) => s._id !== id));
       alert("Song deleted");
@@ -143,7 +147,6 @@ const SongPage = () => {
       </h3>
     );
   };
-
 
   if (loading) {
     return (
@@ -285,7 +288,7 @@ const SongPage = () => {
                     {song.song_image && (
                       <img
                         src={song.song_image}
-                        alt={`${song.song_name} cover`}
+                        alt={`${song.song_name || song.song_title} cover`} // Corrected interpolation
                         className="w-full h-40 object-cover rounded-md mb-3"
                       />
                     )}
