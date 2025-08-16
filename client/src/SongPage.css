@@ -1,0 +1,23 @@
+/* SongPage.css */
+
+
+
+.song-title-container.overflowing {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-100% - 1rem));
+  }
+}
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
+  display: inline-block;
+  padding-right: 1rem;
+}
