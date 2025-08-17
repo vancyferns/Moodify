@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+// Go up one level from 'components' to 'src', then into 'assets'
+import wavesgif from "../assets/waves2.gif";
 function EmotionQuestionnaire() {
   // Hook for navigation
   const navigate = useNavigate();
@@ -83,7 +84,6 @@ function EmotionQuestionnaire() {
         localStorage.setItem("moodHistory", JSON.stringify(updatedHistory));
       }
 
-
       // Navigate to the song list page and pass the results in the route's state
       navigate('/songlist', {
         state: {
@@ -136,11 +136,15 @@ function EmotionQuestionnaire() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white pt-[100px] px-4 pb-8 flex justify-center items-start relative z-0">
+    // Updated container with the GIF background
+    <div className="relative min-h-screen bg-[#0f0f1a] text-white pt-[100px] px-4 pb-8 flex justify-center items-start overflow-hidden">
+      <img
+        src={wavesgif}
+        alt="Background waves"
+        className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none z-0"
+      />
       <div className="relative bg-[#1a1a2e] bg-opacity-60 backdrop-blur-md border border-purple-800/50 p-8 rounded-2xl shadow-2xl w-full max-w-4xl text-center">
-        {/* Animated background orbs */}
-        <div className="absolute -top-10 -left-10 w-48 h-48 bg-purple-500 blur-3xl opacity-30 rounded-full animate-pulse"></div>
-        <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-blue-500 blur-3xl opacity-30 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+        {/* Animated background orbs have been removed */}
 
         {!isLoading && !error && (
           <div className="relative z-10">
