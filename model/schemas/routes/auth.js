@@ -7,7 +7,7 @@ const router = express.Router();
 // SIGNUP
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password } = req.body; // Password should be a plaintext string from the frontend
+    const { name, email, password } = req.body; 
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: "All fields are required" });
@@ -41,7 +41,7 @@ router.post("/signup", async (req, res) => {
 // SIGNIN
 router.post("/signin", async (req, res) => {
   try {
-    const { email, password } = req.body; // Password should be a plaintext string from the frontend
+    const { email, password } = req.body; 
 
     if (!email || !password) {
       return res.status(400).json({ error: "All fields are required" });

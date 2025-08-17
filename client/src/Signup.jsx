@@ -37,10 +37,10 @@ export default function Signup() {
     const res = await signup(data);
     setLoading(false);
     if (!res.ok) return setError(res.error || "Signup failed");
+    
     toast.success("Account created successfully!");
     setSession(res.data);
 
-    // Small delay so user sees the popup
     setTimeout(() => {
      navigate("/");
      }, 1200);

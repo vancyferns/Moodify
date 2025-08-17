@@ -7,6 +7,7 @@ import { useAuth } from "./AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import wavesgif from "./assets/waves2.gif";
+import toast from "react-hot-toast";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -30,8 +31,11 @@ export default function Signin() {
     console.log("Signin response:", res); 
     setLoading(false);
     if (!res.ok) return setError(res.error || "Signin failed");
-    setSession(res.data);
-    navigate("/", { state: { message: "Signed in successfully" } });
+    
+     toast.success("Signed in successfully");
+     setSession(res.data);
+    
+     navigate("/", { replace: true });
   };
 
   return (

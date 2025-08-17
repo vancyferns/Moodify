@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
 import CryptoJS from "crypto-js";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://humble-goldfish-4j9wgq46wr6j3j6xj-5002.app.github.dev";
+const API_BASE = import.meta.env.VITE_AUTH_API_BASE_URL || "http://localhost:5002";
 const USE_MOCK = (import.meta.env.VITE_USE_MOCK_AUTH || "false") === "true";
 
-// Helper: Deterministic hash using SHA-256
+// Deterministic hash using SHA-256
 function sha256Hash(str) {
   return CryptoJS.SHA256(str).toString();
 }
@@ -61,7 +61,7 @@ export async function signin({ email, password }) {
     return { ok: true, data: session };
   }
 
-  const shaHashed = sha256Hash(password); // <-- Deterministic hash
+  const shaHashed = sha256Hash(password); 
   const res = await fetch(`${API_BASE}/api/auth/signin`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
