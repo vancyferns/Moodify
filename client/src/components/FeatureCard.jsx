@@ -1,12 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-// 1. Component now accepts an icon, title, description, and iconColor
 const FeatureCard = ({ icon, title, description, iconColor }) => {
-  // The icon prop is a component, so we can render it directly
   const Icon = icon;
   return (
-    // We pass the iconColor to the styled-component for dynamic styling
     <StyledWrapper iconColor={iconColor}>
       <figure className="card">
         <div className="card_icon">
@@ -22,9 +19,14 @@ const FeatureCard = ({ icon, title, description, iconColor }) => {
 const StyledWrapper = styled.div`
   .card {
     height: 250px;
-    background: #252547; /* Matched original card background */
-    border-radius: 1rem; /* Matched original card border-radius */
-    border: none;
+    border-radius: 1rem;
+    
+    /* --- Glassmorphism Styles Added --- */
+    background: rgba(255, 255, 255, 0.05); /* Semi-transparent background */
+    backdrop-filter: blur(12px);          /* Frosted glass effect */
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle white border */
+    /* --- End of Glassmorphism Styles --- */
+
     position: relative;
     transform-style: preserve-3d;
     will-change: transform;
@@ -42,7 +44,6 @@ const StyledWrapper = styled.div`
   }
   
   .card_icon, .card_title, .card_description {
-    /* This makes the content pop out on hover */
     transition: transform .5s;
   }
   
@@ -54,7 +55,6 @@ const StyledWrapper = styled.div`
 
   .card_icon {
     margin-bottom: 1rem;
-    /* Use the passed-in color prop for the icon */
     color: ${props => props.iconColor || '#FFF'};
   }
 
@@ -66,7 +66,7 @@ const StyledWrapper = styled.div`
   }
   
   .card_description {
-    color: #a0aec0; /* A light gray for the description */
+    color: #a0aec0;
     font-size: 0.875rem;
   }
 `;

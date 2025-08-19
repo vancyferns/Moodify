@@ -3,14 +3,15 @@ import { Link } from "react-router-dom";
 import Moodify_logo from "../assets/Moodify_logo3i.png";
 import wavesgif from "../assets/waves22.gif";
 
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    // UPDATED: Classes changed for the new centered, pill-shaped style
+    // UPDATED: max-w-lg changed to max-w-4xl to increase width
     <nav 
       className="fixed top-4 left-1/2 -translate-x-1/2 z-50 
-                 w-[90%] max-w-lg 
+                 w-[95%] max-w-4xl 
                  rounded-full 
                  bg-slate-900/20 backdrop-blur-lg border border-slate-100/10 
                  px-6 py-3 flex items-center justify-between text-white"
@@ -27,13 +28,14 @@ const Navbar = () => {
         </Link>
       </div>
 
-      {/* Desktop Menu */}
-      <div className="hidden md:flex space-x-6 text-sm">
+      {/* Desktop Menu - UPDATED with all links */}
+      <div className="hidden md:flex items-center space-x-6 text-sm">
         <Link to="/" className="hover:text-purple-400 transition-colors">Home</Link>
         <Link to="/about" className="hover:text-purple-400 transition-colors">About</Link>
         <Link to="/how-it-works" className="hover:text-purple-400 transition-colors">How it works</Link>
-        {/* Simplified for space */}
-        <Link to="/account" className="hover:text-purple-400 transition-colors">Login</Link> 
+        <Link to="/songs" className="hover:text-purple-400 transition-colors">Songs</Link>
+        <Link to="/history" className="hover:text-purple-400 transition-colors">History</Link>
+        <Link to="/account" className="hover:text-purple-400 transition-colors ml-4 px-4 py-2 rounded-full bg-purple-600/50 hover:bg-purple-600/80">SignUp / SignIn</Link> 
       </div>
 
       {/* Hamburger Icon*/}

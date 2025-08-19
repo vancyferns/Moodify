@@ -1,15 +1,14 @@
 import React from 'react';
-import { Instagram, Facebook, Youtube, Github, Mail, Phone, MapPin, Heart } from 'lucide-react';
+import { Instagram, Facebook, Youtube, Github, Mail, Phone, MapPin, Heart, Music } from 'lucide-react';
 
 const Footer = () => {
   const year = new Date().getFullYear();
 
-  // 1. Add a 'colorClass' to each link for dynamic styling
   const socialLinks = [
-    { icon: Instagram, href: '#', label: 'Instagram', colorClass: 'instagram' },
-    { icon: Facebook, href: '#', label: 'Facebook', colorClass: 'facebook' },
-    { icon: Youtube, href: '#', label: 'YouTube', colorClass: 'youtube' },
-    { icon: Github, href: '#', label: 'GitHub', colorClass: 'github' },
+    { icon: Instagram, href: 'https://instagram.com/moodify', label: 'Instagram' },
+    { icon: Facebook, href: 'https://facebook.com/moodify', label: 'Facebook' },
+    { icon: Youtube, href: 'https://youtube.com/moodify', label: 'YouTube' },
+    { icon: Github, href: 'https://github.com/moodify', label: 'GitHub' },
   ];
 
   const contactDetails = [
@@ -19,13 +18,18 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-[#0f0f1a] text-gray-300 font-sans relative">
-      <div className="container mx-auto px-6 lg:px-8 py-12 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-gray-300 font-sans relative overflow-hidden">
+      <div className="container mx-auto px-6 lg:px-8 py-8 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-7">
           
           {/* Brand Section */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-white">Moodify</h3>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              {/* <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <Music className="w-4 h-4 text-white" />
+              </div> */}
+              <h3 className="text-xl font-bold text-white py-2">Moodify</h3>
+            </div>
             <p className="text-sm text-gray-400 max-w-sm">
               "Where your emotions meet their perfect melody." Playlists curated for every mood and moment.
             </p>
@@ -37,12 +41,12 @@ const Footer = () => {
           </div>
 
           {/* Contact Us Section */}
-          <div className="space-y-6">
-            <h4 className="text-lg font-semibold text-white px-4">Contact Us</h4>
-            <ul className="space-y-3">
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-white py-2 px-7">Contact Us</h4>
+            <ul className="space-y-2">
               {contactDetails.map((detail, index) => (
                 <li key={index} className="flex items-center space-x-3">
-                  <detail.icon className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                  <detail.icon className="w-4 h-4 text-purple-400 flex-shrink-0" />
                   {detail.href ? (
                     <a href={detail.href} className="text-sm text-gray-400 hover:text-purple-400 transition-colors">
                       {detail.text}
@@ -55,51 +59,37 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Follow Us Section with New Animated Icons */}
+          {/* Follow Us Section */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-white px-2">Follow Us</h4>
-            <div className="flex gap-4">
-              {socialLinks.map((link) => (
+            <h4 className="text-lg font-semibold text-white py-2">Follow Us</h4>
+            <div className="flex gap-3">
+              {socialLinks.map((link, index) => (
                 <a
-                  key={link.label}
+                  key={index}
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  // 2. This is the main container for each icon
-                  className="group relative"
+                  aria-label={link.label}
+                  className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-600 text-gray-400 hover:text-white hover:border-purple-400 transition-all"
                 >
-                  {/* 3. The colored circle that animates on hover */}
-                  <div
-                    className={`icon-${link.colorClass} w-12 h-12 bg-white rounded-full flex items-center justify-center 
-                                transition-all duration-300 ease-in-out
-                                relative overflow-hidden z-0
-                                before:content-[''] before:absolute before:bottom-0 before:left-0 
-                                before:w-full before:h-0 before:rounded-full before:-z-10
-                                before:transition-all before:duration-300 group-hover:before:h-full`}
-                  >
-                    {/* 4. The Icon itself */}
-                    <link.icon className="w-6 h-6 text-black transition-colors duration-300 group-hover:text-white z-10" />
-                  </div>
-                  {/* 5. The Tooltip that appears on hover */}
-                  <span
-                    className={`tooltip-${link.colorClass} absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 
-                               text-white text-xs rounded-md 
-                               scale-0 group-hover:scale-100 transition-transform duration-300 ease-in-out whitespace-nowrap`}
-                  >
-                    {link.label}
-                  </span>
+                  <link.icon className="w-4 h-4" />
                 </a>
               ))}
             </div>
+            <p className="text-xs text-gray-500">
+              Join our community and stay updated with the latest playlists.
+            </p>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-6 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 space-y-2 sm:space-y-0">
+        <div className="mt-8 pt-4 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 space-y-2 sm:space-y-0">
           <p>&copy; {year} Moodify. All Rights Reserved.</p>
-          <div className="flex gap-6">
+          <p>Crafting musical experiences since 2023</p>
+          <div className="flex gap-4">
             <a href="#privacy" className="hover:text-purple-400">Privacy Policy</a>
-            <a href="#terms" className="hover:text-purple-400">Terms of Service</a>
+            <a href="#terms" className="hover:text-purple-400">Terms</a>
+            <a href="#cookies" className="hover:text-purple-400">Cookies</a>
           </div>
         </div>
       </div>
