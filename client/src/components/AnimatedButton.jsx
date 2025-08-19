@@ -12,6 +12,9 @@ const AnimatedButton = ({ children, onClick }) => {
 }
 
 const StyledWrapper = styled.div`
+  /* Added to make it fit well in flex containers */
+  display: inline-block; 
+
   @keyframes border-animation {
     to {
       transform: translateX(-25%);
@@ -22,7 +25,6 @@ const StyledWrapper = styled.div`
     display: block;
     cursor: pointer;
     color: white;
-    margin: 0 auto;
     position: relative;
     text-decoration: none;
     font-weight: 600;
@@ -41,7 +43,6 @@ const StyledWrapper = styled.div`
     left: 0;
     width: 400%;
     height: 100%;
-    /* UPDATED: New gradient to match the site's theme */
     background: linear-gradient(115deg, #60a5fa, #a855f7, #f472b6, #a855f7, #60a5fa);
     background-size: 25% 100%;
     animation: border-animation .75s linear infinite;
@@ -58,12 +59,16 @@ const StyledWrapper = styled.div`
 
   .codepen-button span {
     position: relative;
-    display: block;
-    padding: 0.75rem 2rem;
+    display: flex; /* <-- UPDATED */
+    align-items: center; /* <-- ADDED for icon alignment */
+    justify-content: center; /* <-- ADDED for centering */
+    gap: 0.5rem; /* <-- ADDED for spacing between icon and text */
+    padding: 0.75rem 1.5rem; /* Adjusted padding slightly for a better fit */
     font-size: 1rem;
     background: #0f0f1a;
     border-radius: 3px;
     height: 100%;
+    white-space: nowrap; /* Prevents text from wrapping */
   }
 `;
 
