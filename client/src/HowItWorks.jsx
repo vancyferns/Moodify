@@ -167,7 +167,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section className="w-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] px-4 py-24 text-center relative overflow-hidden font-[Inter]">
+    <section className="w-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] px-4 py-32 text-center relative overflow-hidden font-[Inter]">
 
       {/* Bubble background */}
       <div className="absolute w-[500px] h-[500px] rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-pink-500 opacity-40 blur-3xl animate-pulse z-0"></div>
@@ -183,8 +183,8 @@ export default function HowItWorks() {
 </h1>
 
         <p className="text-lg sm:text-xl text-gray-300 mb-10 leading-snug text-center">
-        <span className="block sm:inline">Discover the magic behind Moodify in four</span>{' '}
-        <span className="block sm:inline">beautifully simple steps</span>
+        <span className="block ">Discover the magic behind Moodify in four beautifully simple steps</span>{' '}
+        {/* <span className="block "></span> */}
         </p>
         <button className="bg-[#A855F7] text-white font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-xl hover:bg-[#9333EA] transition duration-300">
           Try it now

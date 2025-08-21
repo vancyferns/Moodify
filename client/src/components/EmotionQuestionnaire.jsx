@@ -137,7 +137,7 @@ function EmotionQuestionnaire() {
 
   return (
     // Updated container with the GIF background
-    <div className="relative min-h-screen bg-[#0f0f1a] text-white pt-[100px] px-4 pb-8 flex justify-center items-start overflow-hidden">
+    <div className="relative min-h-screen bg-[#0f0f1a] text-white pt-[120px] px-4 pb-8 flex justify-center items-start overflow-hidden">
       <img
         src={wavesgif}
         alt="Background waves"

@@ -21,7 +21,7 @@ import { Toaster } from "react-hot-toast";
 function AppContent() {
   const location = useLocation();
 
-  const footerRoutes = ['/', '/how-it-works', '/about', '/songs'];
+  const footerRoutes = ['/', '/how-it-works', '/about', '/songs','/account','/signin','/signup','/questionnaire', '/emotion-detection','/songlist'];
   const showFooter = footerRoutes.includes(location.pathname);
 
   return (
@@ -36,7 +36,7 @@ function AppContent() {
 
           {/* Dynamic route for all emotion-based song lists */}
           {/* This route will now handle all emotions, e.g., /songs/happy, /songs/sad */}
-          <Route path="/songs/:emotion" element={<SongList />} />
+          {/* <Route path="/songs/:emotion" element={<SongList />} /> */}
           
           <Route path="/songlist" element={<SongList />} />
           <Route path="/how-it-works" element={<HowItWorks />} />

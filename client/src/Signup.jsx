@@ -47,13 +47,13 @@ export default function Signup() {
   };
 
   return (
-    <div className="relative min-h-screen text-white bg-gradient-to-b from-[#0f0f1a] via-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center p-6 overflow-hidden">
+    <div className="relative min-h-screen text-white bg-gradient-to-b from-[#0f0f1a] via-[#1a1a2e] to-[#0f0f1a] flex flex-col p-6 overflow-hidden pt-18">
            <img
                     src={wavesgif}
                      alt="Background waves"
                     className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none z-0"
             /> 
-      <div className="w-full max-w-md bg-white/5 backdrop-blur rounded-2xl p-8 shadow-xl border border-white/10 mt-15">
+      <div className="w-full max-w-md bg-white/5 backdrop-blur rounded-2xl p-8 shadow-xl border border-white/10 mt-12 mx-auto">
         <h1 className="text-2xl font-bold text-white mb-6">Create your account</h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

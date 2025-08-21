@@ -58,8 +58,13 @@ const LandingPage = () => {
       )}
 
       {/* Hero Section */}
-      <div className="flex flex-col items-center justify-center min-h-screen px-6 relative z-10">
-        <div className="mb-6 mt-4 text-lg md:text-xl font-semibold tracking-[0.05em] bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 text-transparent bg-clip-text animate-pulse drop-shadow-[0_0_12px_rgba(168,85,247,0.7)]">
+      <div className="flex flex-col items-center justify-center 
+                       min-h-screen px-6 relative z-10 
+                       pt-28 sm:pt-32 md:pt-20">
+        <div className="mb-6 mt-4 text-lg md:text-xl font-semibold tracking-[0.05em] 
+                       bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 
+                       text-transparent bg-clip-text animate-pulse 
+                       drop-shadow-[0_0_12px_rgba(168,85,247,0.7)]">
           🎧 Feel First, Play Next
         </div>
         <TypeAnimation
@@ -72,9 +77,8 @@ const LandingPage = () => {
           wrapper="h1"
           speed={50}
           repeat={Infinity}
-          className="font-cursive text-4xl md:text-6xl bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text mb-6 drop-shadow-lg text-center h-[120px] md:h-auto"
-        />
-        <p className="max-w-2xl mx-auto text-gray-300 text-lg mb-8 leading-relaxed text-center">
+          className="font-cursive text-2xl sm:text-3xl md:text-6xl bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text mb-6 drop-shadow-lg text-center"/>
+        <p className="max-w-2xl mx-auto text-gray-300 text-base sm:text-lg mt-4 mb- leading-relaxed text-center">
           Feel It. Hear It. — Music that moves with your emotions. Let the rhythm
           adapt to your mood in real-time.
         </p>

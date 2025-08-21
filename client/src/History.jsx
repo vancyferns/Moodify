@@ -48,7 +48,7 @@ const HistoryList = () => {
               className="p-6 rounded-2xl backdrop-blur-lg bg-gradient-to-br from-purple-500/20 to-purple-300/30"
             >
               <div className="text-center">
-                <p className="text-2xl font-semibold">{mood.emotion}</p>
+                <p className="text-2xl font-semibold capitalize">{mood.emotion}</p>
                 <p className="text-gray-400 text-sm">{new Date(mood.timestamp).toLocaleString()}</p>
               </div>
             </motion.div>
