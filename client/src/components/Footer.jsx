@@ -19,7 +19,8 @@ const Footer = () => {
 
   return (
     <footer className="bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-gray-300 font-sans relative overflow-hidden">
-      <div className="container mx-auto px-6 lg:px-8 py-8 relative z-10">
+      <div className="container mx-auto px-6 lg:px-4 py-4 relative z-10">
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-7">
           
           {/* Brand Section */}
@@ -80,15 +81,19 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-8 pt-4 border-t border-gray-800 flex flex-col sm:flex-row justify-center md:justify-between items-center text-xs text-gray-500 space-y-2 sm:space-y-0">
-          <p className="text-center md:text-left">&copy; {year} Moodify. All Rights Reserved.</p>
-          <p className="text-center md:text-left ">Crafting musical experiences since 2023</p>
-          <div className="flex justify-center md:justify-end gap-3 sm:gap-4">
-            <a href="#privacy" className="hover:text-purple-400">Privacy Policy</a>
-            <a href="#terms" className="hover:text-purple-400">Terms</a>
-            <a href="#cookies" className="hover:text-purple-400">Cookies</a>
-          </div>
-        </div>
+        {/* Bottom Bar */}
+{/* Bottom Bar */}
+<div className="mt-2 pt-1 border-t border-gray-800 flex flex-col sm:flex-row justify-center md:justify-between items-center text-xs text-gray-500 space-y-2 sm:space-y-0">
+  <p className="text-center md:text-left">&copy; {year} Moodify. All Rights Reserved.</p>
+  <p className="text-center md:text-left">Crafting musical experiences since 2023</p>
+  <div className="flex justify-center md:justify-end gap-3 sm:gap-4">
+    <a href="#privacy" className="hover:text-purple-400">Privacy Policy</a>
+    <a href="#terms" className="hover:text-purple-400">Terms</a>
+    <a href="#cookies" className="hover:text-purple-400">Cookies</a>
+  </div>
+</div>
+
+
       </div>
     </footer>
   );
