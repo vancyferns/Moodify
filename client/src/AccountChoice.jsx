@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import wavesgif1 from "./assets/waves1.gif";
+import wavesgif1 from "./assets/waves2.gif";
 const AccountChoice = () => {
 const navigate = useNavigate();
 
