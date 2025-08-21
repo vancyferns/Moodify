@@ -142,7 +142,7 @@ export default function AboutUs() {
         <Bubble className="top-20 left-10 w-32 h-32 bg-purple-400/10" />
         <Bubble className="bottom-32 right-16 w-40 h-40 bg-pink-400/15" />
         <Bubble className="top-1/2 left-1/2 w-96 h-96 bg-purple-300/10 -translate-x-1/2 -translate-y-1/2" />
-
+{/* {checking} */}
         {/* 5. Pass `Maps` down to the Hero component */}
         <Hero navigate={navigate} />
         <Journey />

@@ -16,7 +16,7 @@
     "bcryptjs": "^3.0.2",
     "chart.js": "^4.5.0",
     "crypto-js": "^4.2.0",
-    "framer-motion": "^12.23.9",
+    "framer-motion": "^12.23.12",
     "lucide-react": "^0.536.0",
     "p5": "^2.0.4",
     "prop-types": "^15.8.1",

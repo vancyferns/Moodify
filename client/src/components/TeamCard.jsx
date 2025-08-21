@@ -83,14 +83,14 @@ const StyledWrapper = styled.div`
   }
   .content .title {
     display: block;
-    color: #fff;
+    color: #050301;       // Darker text for better contrast
     font-weight: 900;
     font-size: 18px; /* Slightly smaller font */
     text-shadow: 0 1px 3px rgba(0,0,0,0.3);
   }
   .content .text {
     display: block;
-    color: rgba(255, 255, 255, 0.8);
+    color: black;
     font-size: 13px; /* Slightly smaller font */
     margin-top: 8px; /* Adjusted margin */
   }
