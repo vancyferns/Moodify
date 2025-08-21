@@ -7,6 +7,7 @@ import neutralImg from './assets/neutral.png';
 import surpriseImg from './assets/surprise.png';
 import { API_BASE_URL } from "./config";
 import wavesgif from "./assets/waves2.gif";
+import AnimatedButton from './components/AnimatedButton'; // Assuming you have this component
 
 const EmotionDetection = () => {
   const [result, setResult] = useState(null);
@@ -20,6 +21,7 @@ const EmotionDetection = () => {
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
+  const fileInputRef = useRef(null); // Ref for the hidden file input
 
   useEffect(() => {
     if (result?.emotion) {
@@ -38,6 +40,26 @@ const EmotionDetection = () => {
     const lower = emotion.trim().toLowerCase();
     if (lower === "surprise") return "surprised";
     return lower;
+  };
+  
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPlaybackURL(url);
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.srcObject = null;
+        videoRef.current.src = url;
+        videoRef.current.muted = false;
+        videoRef.current.controls = true;
+        videoRef.current.autoplay = true;
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current.play();
+        };
+      }
+      analyzeVideo(file);
+    }
   };
 
   const analyzeVideo = async (videoBlob) => {
@@ -74,54 +96,60 @@ const EmotionDetection = () => {
   };
 
   const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.controls = false;
-      videoRef.current.muted = true;
-      videoRef.current.play();
-    }
+        if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.controls = false;
+            videoRef.current.muted = true;
+            videoRef.current.play();
+        }
 
-    recordedChunksRef.current = [];
+        recordedChunksRef.current = [];
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
 
-    const mediaRecorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = mediaRecorder;
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunksRef.current.push(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-      const url = URL.createObjectURL(blob);
-      setPlaybackURL(url);
-
-      if (videoRef.current) {
-        videoRef.current.pause();
-        videoRef.current.srcObject = null;
-        videoRef.current.src = url;
-        videoRef.current.muted = false;
-        videoRef.current.controls = true;
-        videoRef.current.autoplay = true;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current.play();
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunksRef.current.push(event.data);
+            }
         };
-      }
 
-      analyzeVideo(blob);
-      stream.getTracks().forEach((track) => track.stop());
-    };
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            setPlaybackURL(url);
 
-    mediaRecorder.start();
-    setIsRecording(true);
+            if (videoRef.current) {
+                videoRef.current.pause();
+                videoRef.current.srcObject = null;
+                videoRef.current.src = url;
+                videoRef.current.muted = false;
+                videoRef.current.controls = true;
+                videoRef.current.autoplay = true;
+                videoRef.current.onloadedmetadata = () => {
+                    videoRef.current.play();
+                };
+            }
 
-    setTimeout(() => {
-      mediaRecorder.stop();
-      setIsRecording(false);
-    }, 10000);
+            analyzeVideo(blob);
+            stream.getTracks().forEach((track) => track.stop());
+        };
+
+        mediaRecorder.start();
+        setIsRecording(true);
+
+        setTimeout(() => {
+            if (mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+            }
+            setIsRecording(false);
+        }, 10000);
+    } catch (error) {
+        console.error("Error accessing media devices.", error);
+        setResult({ error: "Could not access camera/microphone. Please check permissions." });
+    }
   };
 
   const handleSuggestions = () => {
@@ -134,6 +162,12 @@ const EmotionDetection = () => {
     });
   };
 
+  const handleUploadClick = () => {
+    // Programmatically click the hidden file input
+    fileInputRef.current.click();
+  };
+
+
   return (
     <div className="relative min-h-screen w-full bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] px-6 py-16 flex items-center justify-center text-white font-sans overflow-hidden">
       {/* Animated background */}
@@ -145,59 +179,35 @@ const EmotionDetection = () => {
       <div className="absolute w-[500px] h-[500px] rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-pink-500 opacity-30 blur-3xl animate-pulse z-0"></div>
 
       {/* Faded card */}
-      
       <div className="w-full max-w-2xl text-center z-10 rounded-3xl p-8 bg-gradient-to-b from-white/10 via-white/5 to-transparent backdrop-blur-lg shadow-lg ">
         <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 drop-shadow-lg">
-  Emotion Detection
-</h1>
-
-
+          Emotion Detection
+        </h1>
         <p className="text-sm text-gray-300 mb-8">Upload or record a video to detect your emotion</p>
 
         <div className="flex justify-center gap-4 flex-wrap mb-6">
-          {/* Upload button */}
-          <label className="bg-[#A855F7] text-white font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-xl hover:bg-[#9333EA] transition duration-300 cursor-pointer">
+          {/* Use AnimatedButton for Upload */}
+          <AnimatedButton
+            onClick={handleUploadClick}
+            disabled={isRecording || loading}
+          >
             Upload Video
-            <input
-              type="file"
-              accept="video/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const url = URL.createObjectURL(file);
-                  setPlaybackURL(url);
-                  if (videoRef.current) {
-                    videoRef.current.pause();
-                    videoRef.current.srcObject = null;
-                    videoRef.current.src = url;
-                    videoRef.current.muted = false;
-                    videoRef.current.controls = true;
-                    videoRef.current.autoplay = true;
-                    videoRef.current.onloadedmetadata = () => {
-                      videoRef.current.play();
-                    };
-                  }
-                  analyzeVideo(file);
-                }
-              }}
-            />
-          </label>
+          </AnimatedButton>
+          <input
+            type="file"
+            accept="video/*"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
 
-          {/* Record button */}
-          <label
-            htmlFor="record-control"
-            className="bg-[#A855F7] text-white font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-xl hover:bg-[#9333EA] transition duration-300 cursor-pointer"
+          {/* Use AnimatedButton for Record */}
+          <AnimatedButton
+            onClick={startRecording}
+            disabled={isRecording || loading}
           >
             {isRecording ? 'Recording...' : 'Record Live (10s)'}
-          </label>
-          <input
-            id="record-control"
-            type="checkbox"
-            onChange={startRecording}
-            disabled={isRecording}
-            className="hidden"
-          />
+          </AnimatedButton>
         </div>
 
         {/* Status messages */}
@@ -218,15 +228,14 @@ const EmotionDetection = () => {
               className="w-full rounded-xl border border-gray-700 mb-4 max-h-64 outline-none focus:outline-none ring-0 shadow-lg"
             />
             {result?.emotion && !loading && (
-              <button
+              <AnimatedButton
                 onClick={() => {
                   URL.revokeObjectURL(playbackURL);
                   setIsApproved(true);
                 }}
-                className="bg-[#A855F7] text-white font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-xl hover:bg-[#9333EA] transition duration-300"
               >
                 Submit
-              </button>
+              </AnimatedButton>
             )}
           </>
         )}
@@ -270,25 +279,20 @@ const EmotionDetection = () => {
                 />
               </div>
             </div>
-           <p className="text-transparent bg-clip-text bg-gradient-to-r from-purple-800 via-pink-400 to-blue-800 text-xl font-semibold capitalize animate-fadeIn drop-shadow-md">
-  {"You Seem " + result.emotion}
-</p>
+            <p className="text-transparent bg-clip-text bg-gradient-to-r from-purple-800 via-pink-400 to-blue-800 text-xl font-semibold capitalize animate-fadeIn drop-shadow-md">
+              {"You Seem " + result.emotion}
+            </p>
             <p className="text-sm text-gray-300">Confidence: {result.confidence.toFixed(1)}%</p>
             {showButton && (
-              <button
-                className="bg-[#A855F7] text-white font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-xl hover:bg-[#9333EA] transition duration-300"
-                onClick={handleSuggestions}
-              >
+              <AnimatedButton onClick={handleSuggestions}>
                 Song Suggestions
-              </button>
+              </AnimatedButton>
             )}
           </div>
         )}
       </div>
     </div>
-    
   );
-  
 };
 
 export default EmotionDetection;
