@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import wavesgif1 from "./assets/waves1.gif";
+import wavesgif1 from "./assets/waves2.gif";
+import AnimatedButton from "./components/AnimatedButton";
 const AccountChoice = () => {
 const navigate = useNavigate();
 
@@ -26,23 +27,23 @@ const navigate = useNavigate();
 
          <div className="flex justify-center gap-12 flex-wrap z-10 mb-6">
   <Link to="/signup" className="block">
-    <button
+    <AnimatedButton
       className="bg-[#A855F7] text-white font-semibold px-12 py-3 rounded-full shadow-md 
                  hover:shadow-purple-500/50 hover:bg-[#9333EA] 
                  hover:scale-105 active:scale-95 transition-all duration-300"
         >
         Sign Up
-    </button>
+    </AnimatedButton>
     </Link>
 
   <Link to="/signin" className="block">
-    <button
+    <AnimatedButton
       className="bg-[#A855F7] text-white font-semibold px-12 py-3 rounded-full shadow-md 
                  hover:shadow-purple-500/50 hover:bg-[#9333EA] 
                  hover:scale-105 active:scale-95 transition-all duration-300"
     >
       Sign In
-    </button>
+    </AnimatedButton>
   </Link>
          </div>
        </div>

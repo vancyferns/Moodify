@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Video, FileText } from "lucide-react";
-import wavesgif from "./assets/waves1.gif";
+import wavesgif from "./assets/waves2.gif";
+import AnimatedButton from "./components/AnimatedButton"; // <-- 1. IMPORT the component
 
 const Choose = () => {
   const navigate = useNavigate();
@@ -34,24 +35,20 @@ const Choose = () => {
           Select your preferred method to begin your emotion-powered music journey.
         </p>
 
-        {/* Buttons */}
-        <div className="flex flex-col md:flex-row justify-center items-center gap-4">
-          <button
-            onClick={() => navigate("/emotion-detection")}
-            className="bg-[#A855F7] text-white font-medium px-4 py-3 rounded-full shadow-md hover:shadow-lg hover:bg-[#9333EA] transition duration-300 flex items-center justify-center gap-1 text-sm w-40"
-          >
-            <Video className="w-4 h-4" />
+        {/* v-- 2. REPLACE the old buttons --v */}
+        <div className="flex flex-col md:flex-row justify-center items-center gap-6">
+          <AnimatedButton onClick={() => navigate("/emotion-detection")}>
+            <Video className="w-5 h-5" />
             Video
-          </button>
+          </AnimatedButton>
 
-          <button
-            onClick={() => navigate("/questionnaire")}
-            className="bg-[#A855F7] text-white font-medium px-4 py-3 rounded-full shadow-md hover:shadow-lg hover:bg-[#9333EA] transition duration-300 flex items-center justify-center gap-1 text-sm w-40"
-          >
-            <FileText className="w-4 h-4" />
+          <AnimatedButton onClick={() => navigate("/questionnaire")}>
+            <FileText className="w-5 h-5" />
             Questionnaire
-          </button>
+          </AnimatedButton>
         </div>
+        {/* ^-- Buttons are now updated --^ */}
+
       </section>
 
       {/* Embedded Styling */}

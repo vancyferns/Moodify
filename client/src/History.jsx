@@ -14,6 +14,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import AnimatedButton from "./components/AnimatedButton"; // --- 1. IMPORT ADDED ---
 
 // Register necessary Chart.js components
 ChartJS.register(
@@ -34,7 +35,7 @@ const moodIcons = {
   sad: "😢",
   angry: "😠",
   neutral: "😐",
-  excited: "🤩",
+  shocked: "😲",
 };
 
 // --- REUSABLE UI COMPONENTS ---
@@ -225,12 +226,20 @@ const MoodCharts = ({ moodHistory }) => {
 const MostPrevalentMood = ({ moodHistory }) => {
   if (!moodHistory.length) return null;
 
+  // Helper to normalize mood names (for counting + display)
+  const normalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+  // Count moods (case-insensitive)
   const counts = moodHistory.reduce((acc, mood) => {
-    acc[mood.emotion] = (acc[mood.emotion] || 0) + 1;
+    const normalized = normalize(mood.emotion);
+    acc[normalized] = (acc[normalized] || 0) + 1;
     return acc;
   }, {});
 
-  const mostPrevalent = Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b));
+  // Find most prevalent mood
+  const mostPrevalent = Object.keys(counts).reduce((a, b) =>
+    counts[a] > counts[b] ? a : b
+  );
 
   return (
     <motion.div
@@ -241,15 +250,16 @@ const MostPrevalentMood = ({ moodHistory }) => {
       className="max-w-2xl mx-auto text-center mb-8"
     >
       <Card className="!bg-white/10">
-        <p className="text-xl sm:text-2xl mb-4 text-gray-300">Your most prevalent mood is</p>
-        <p className="text-xl sm:text-5xl font-bold capitalize bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
-          {mostPrevalent} 
+        <p className="text-xl sm:text-2xl mb-4 text-gray-300">
+          Your most prevalent mood is
         </p>
-        <a
-          href={`/songs/${mostPrevalent}`}
-          className="inline-block mt-6 px-8 py-3 rounded-full bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 text-white font-semibold shadow-lg hover:shadow-indigo-500/50 transform hover:scale-105"
-        >
-          Explore '{mostPrevalent}' Playlist
+        <p className="text-xl sm:text-5xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
+          {mostPrevalent}
+        </p>
+        <a href={`/songs/${mostPrevalent.toLowerCase()}`} className="inline-block mt-6">
+          <AnimatedButton>
+            Explore '{mostPrevalent}' Playlist
+          </AnimatedButton>
         </a>
       </Card>
     </motion.div>
