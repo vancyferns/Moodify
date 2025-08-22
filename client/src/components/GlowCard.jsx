@@ -24,7 +24,7 @@ const StyledWrapper = styled.div`
     position: relative;
     width: 280px;
     height: 320px;
-    background-color: #000;
+    background-color: #151B54;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
