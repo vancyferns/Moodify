@@ -17,11 +17,13 @@ import Signup from "./Signup";
 import Signin from "./Signin";
 import AccountChoice from "./AccountChoice";
 import { Toaster } from "react-hot-toast";
+import AccountTypeSelection from './AccountTypeSelection';
+import SigninAdmin from './SigninAdmin';
 
 function AppContent() {
   const location = useLocation();
 
-  const footerRoutes = ['/', '/how-it-works', '/about', '/songs','/account','/signin','/signup','/questionnaire', '/emotion-detection','/songlist'];
+  const footerRoutes = ['/', '/how-it-works', '/about', '/songs','/account','/signin','/signup','/questionnaire', '/emotion-detection','/songlist', '/account-selection', '/signin-admin'];
   const showFooter = footerRoutes.includes(location.pathname);
 
   return (
@@ -46,7 +48,8 @@ function AppContent() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/account" element={<AccountChoice />} />
-
+          <Route path="/account-selection" element={<AccountTypeSelection />} />
+          <Route path="/signin-admin" element={<SigninAdmin />} />
           {/* Example of a protected route using your component */}
           {/* <Route
             path="/some-protected-page"

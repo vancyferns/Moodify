@@ -6,6 +6,7 @@ import wavesgif from "../assets/waves55.gif";
 import { useAuth } from "../AuthContext"; 
 import { Menu, X } from "lucide-react";
 
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -50,20 +51,26 @@ const Navbar = () => {
 
   // Close profile dropdown on outside click
   useEffect(() => {
-    const onDocClick = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
-        setProfileOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, []);
+  const onDocClick = (e) => {
+    if (
+      profileRefDesktop.current &&
+      !profileRefDesktop.current.contains(e.target) &&
+      profileRefMobile.current &&
+      !profileRefMobile.current.contains(e.target)
+    ) {
+      setProfileOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", onDocClick);
+  return () => document.removeEventListener("mousedown", onDocClick);
+}, []);
 
   const handleLogout = () => {
     signout();
     setProfileOpen(false);
     setIsOpen(false);
-    navigate("/signin");
+    navigate("/account-selection");
   };
 
   // Helper for avatar fallback initial
@@ -102,7 +109,7 @@ const Navbar = () => {
            {/* If NOT logged in: keep SignUp / SignIn button */}
         {!user && (
           <Link
-            to="/account"
+            to="/account-selection"
             className="hover:text-purple-400 transition-colors"
           >
             SignUp / SignIn
@@ -279,7 +286,7 @@ const Navbar = () => {
            { to: "/songs", label: "Songs", cls: "stagger-4" },
            { to: "/history", label: "History", cls: "stagger-5" },
             // Only show SignUp/SignIn on mobile if NOT logged in
-            ...(!user ? [{ to: "/account", label: "SignUp / SignIn", cls: "stagger-signin" }] : []),
+            ...(!user ? [{ to: "/account-selection", label: "SignUp / SignIn", cls: "stagger-signin" }] : []),
           ].map((link) => (
             <Link
               key={link.label}

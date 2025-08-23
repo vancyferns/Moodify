@@ -4,6 +4,7 @@ import { API_BASE_URL } from "./config";
 import "./SongPage.css";
 import DeleteModal from "./components/DeleteModal";
 import SongAddedModal from "./components/SongAddedModal";
+import { useAuth } from "./AuthContext";
 
 const SongPage = () => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -25,6 +26,9 @@ const SongPage = () => {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [songs, setSongs] = useState([]);
+
+  const { session } = useAuth();
+  const isAdmin = session?.user?.role === 'admin';
 
   useEffect(() => {
     document.title = "Your Songs — Moodify";
@@ -197,12 +201,15 @@ const SongPage = () => {
           <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-3">
             Your Songs
           </h1>
-          <p className="text-gray-400 text-sm sm:text-base">
+          {isAdmin && (
+           <p className="text-gray-400 text-sm sm:text-base">
             Add your favorite tracks with mood and picture.
           </p>
-        </div>
+          )}
+          </div>
 
         {/* Add Song Form */}
+        {isAdmin && (
         <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg mb-10">
           <h2 className="text-xl font-semibold mb-4 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
             Add a new song
@@ -283,7 +290,7 @@ const SongPage = () => {
               </button>
             </div>
           </form>
-        </div>
+        </div>)}
 
         {/* Mood Filter */}
         {songs.length > 0 && (
@@ -343,12 +350,14 @@ const SongPage = () => {
                       {song.created_at ? new Date(song.created_at).toLocaleString() : ""}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleDeleteClick(song._id)}
-                    className="mt-4 text-sm px-3 py-1 rounded-md bg-red-500 hover:bg-red-600 transition"
-                  >
-                    Delete
-                  </button>
+                  {isAdmin && (
+               <button
+               onClick={() => handleDeleteClick(song._id)}
+               className="mt-4 text-sm px-3 py-1 rounded-md bg-red-500 hover:bg-red-600 transition"
+               >
+               Delete
+               </button>
+               )}
                 </div>
               ))}
             </div>
