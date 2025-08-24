@@ -3,7 +3,7 @@ import { motion, useInView } from "framer-motion";
 import GlowCard from "./components/GlowCard"; // Import the new card component
 import Footer from "./components/Footer";
 import AnimatedButton from "./components/AnimatedButton";
-
+import { useNavigate } from "react-router-dom";
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
   visible: {
@@ -50,6 +50,7 @@ const steps = [
 ];
 
 export default function HowItWorks() {
+  const navigate = useNavigate();
   const cardsRef = useRef(null);
   const isInView = useInView(cardsRef, { once: true, margin: "-100px" });
 
@@ -71,7 +72,8 @@ export default function HowItWorks() {
           <span className="block">Discover the magic behind Moodify in four beautifully simple steps</span>
         </p>
         
-        <AnimatedButton className="bg-[#A855F7] text-white font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-xl hover:bg-[#9333EA] transition duration-300">
+        <AnimatedButton className="bg-[#A855F7] text-white font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-xl hover:bg-[#9333EA] transition duration-300"
+        onClick={() => navigate("/choose")}>
           Try it now
         </AnimatedButton>
       </div>
