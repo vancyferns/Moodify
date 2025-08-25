@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
     setSession(null);
   };
 
-  // In future, you can add a “refresh me” here
+
   useEffect(() => {}, []);
 
   return (

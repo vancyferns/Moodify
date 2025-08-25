@@ -41,10 +41,13 @@ def get_closest_human_face(frame):
 
     return best_face
 
+
 @app.route('/')
 def index():
     return jsonify({"message": "Flask backend running"})
 
+
+# 🔹 UPDATED /analyze ROUTE
 @app.route('/analyze', methods=['POST'])
 def analyze():
     if 'video' not in request.files:
@@ -61,31 +64,60 @@ def analyze():
         if total_frames == 0:
             raise Exception("Video has no frames.")
 
-        cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames // 2)
-        success, frame = cap.read()
-        cap.release()
-        if not success:
-            raise Exception("Could not read frame from video.")
+        emotions_list = []
+        # Sample 5 evenly spaced frames
+        frame_indices = np.linspace(0, total_frames - 1, 5, dtype=int)
 
-        # Strict human face detection
-        face = get_closest_human_face(frame)
-        if face is None:
+        for i in frame_indices:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, i)
+            success, frame = cap.read()
+            if not success:
+                continue
+
+            # Detect face
+            face = get_closest_human_face(frame)
+            if face is None:
+                continue
+
+            try:
+                result = DeepFace.analyze(face, actions=['emotion'], enforce_detection=True)
+                emotions = result[0]['emotion']
+
+                grouped = {
+                    'angry': emotions.get('angry', 0) + emotions.get('disgust', 0) + emotions.get('fear', 0),
+                    'happy': emotions.get('happy', 0),
+                    'sad': emotions.get('sad', 0),
+                    'surprise': emotions.get('surprise', 0),
+                    'neutral': emotions.get('neutral', 0),
+                }
+                emotions_list.append(grouped)
+
+            except Exception as e:
+                print("Frame skipped:", e)
+
+        cap.release()
+
+        if not emotions_list:
             return jsonify({"error": "No valid human face detected in video"}), 422
 
-        result = DeepFace.analyze(face, actions=['emotion'], enforce_detection=True)
-        emotions = result[0]['emotion']
+        # Average scores across frames
+        avg_scores = {emo: 0 for emo in emotions_list[0].keys()}
+        for emo_dict in emotions_list:
+            for emo, val in emo_dict.items():
+                avg_scores[emo] += val
 
-        grouped = {
-            'angry': emotions.get('angry', 0) + emotions.get('disgust', 0),
-            'happy': emotions.get('happy', 0),
-            'sad': emotions.get('sad', 0) + emotions.get('fear', 0),
-            'surprise': emotions.get('surprise', 0),
-            'neutral': emotions.get('neutral', 0),
-        }
+        for emo in avg_scores:
+            avg_scores[emo] /= len(emotions_list)
 
-        dominant_emotion = max(grouped, key=grouped.get)
-        raw_score = grouped[dominant_emotion]
-        total = sum(grouped.values())
+        # Pick dominant emotion with threshold check
+        sorted_emotions = sorted(avg_scores.items(), key=lambda x: x[1], reverse=True)
+        if len(sorted_emotions) > 1 and (sorted_emotions[0][1] - sorted_emotions[1][1]) < 10:
+            dominant_emotion = "angry"  # fallback if too close
+        else:
+            dominant_emotion = sorted_emotions[0][0]
+
+        raw_score = avg_scores[dominant_emotion]
+        total = sum(avg_scores.values())
         confidence = (raw_score / total) * 100 if total > 0 else 0
         confidence = max(83.0, min(confidence * 1.2, 98.0))  # Boost confidence
 
@@ -114,10 +146,10 @@ def get_songs_by_emotion(emotion):
         song['_id'] = str(song['_id'])
     return jsonify({"emotion": emotion, "songs": songs}), 200
 
+
 @app.route("/api/songs", methods=["POST"])
 def add_song():
     try:
-        # Get data with correct keys from the frontend form
         song_mood = request.form.get("song_mood")
         song_name = request.form.get("song_name")
         song_artist = request.form.get("song_artist")
@@ -125,18 +157,15 @@ def add_song():
         song_file = request.files.get("song_file")
         song_image = request.files.get("song_image")
 
-        # Basic validation
         if not all([song_mood, song_name, song_artist, song_file, song_image]):
             return jsonify({"error": "All fields are required"}), 400
 
-        # Upload song to Cloudinary (audio/video type)
         song_upload = cloudinary.uploader.upload(
             song_file,
             resource_type="video",
             folder="songs"
         )
 
-        # Upload image to Cloudinary
         image_upload = cloudinary.uploader.upload(
             song_image,
             folder="song_images"
@@ -150,10 +179,7 @@ def add_song():
             "song_image": image_upload["secure_url"]
         }
 
-        # Insert into MongoDB
         db.songs_by_emotion.insert_one(song_data)
-        
-        # Add the created_at timestamp to match the frontend display
         song_data['_id'] = str(song_data['_id'])
 
         return jsonify(song_data), 201
@@ -162,21 +188,21 @@ def add_song():
         print(e)
         return jsonify({"error": str(e)}), 500
 
+
 @app.route('/api/songs', methods=['GET'])
 def get_all_songs():
     try:
         songs = list(db.songs_by_emotion.find({}))
         for song in songs:
             song['_id'] = str(song['_id'])
-    
         return jsonify(songs), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-        
+
+
 @app.route('/api/songs/<id>', methods=['DELETE'])
 def delete_song(id):
     try:
-        # Check if the ID is a valid ObjectId
         if not ObjectId.is_valid(id):
             return jsonify({"error": "Invalid song ID"}), 400
 

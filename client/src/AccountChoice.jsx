@@ -15,12 +15,12 @@ const navigate = useNavigate();
       />
        <div className="relative w-full max-w-2xl text-center z-10 rounded-3xl p-8 bg-gradient-to-b from-white/10 via-white/5 to-transparent backdrop-blur-lg shadow-lg">
        
-           {/* Title */}
+          
         <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 drop-shadow-lg">
          Welcome to Moodify
         </h1>
 
-        {/* Description */}
+        
         <p className="text-sm text-gray-300 mb-8">
           Please choose an option to continue:
         </p>

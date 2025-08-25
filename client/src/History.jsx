@@ -3,6 +3,7 @@ import { TypeAnimation } from "react-type-animation";
 import Footer from "./components/Footer";
 import { useEffect, useState } from "react";
 import { Bar, Line } from "react-chartjs-2";
+import { useNavigate } from "react-router-dom"; 
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,17 +36,14 @@ const moodIcons = {
   sad: "😢",
   angry: "😠",
   neutral: "😐",
-  shocked: "😲",
+  surprised: "😲",
 };
 
-// --- REUSABLE UI COMPONENTS ---
 
-// Animated background bubble component
 const Bubble = ({ className }) => (
   <div className={`absolute rounded-full filter blur-3xl animate-pulse ${className}`} />
 );
 
-// Glassmorphism card component for consistent styling
 const Card = ({ children, className }) => (
   <motion.div
     variants={{
@@ -59,7 +57,7 @@ const Card = ({ children, className }) => (
   </motion.div>
 );
 
-// --- PAGE SECTIONS ---
+
 
 const Hero = () => (
   <motion.div
@@ -82,7 +80,7 @@ const Hero = () => (
 const MoodCharts = ({ moodHistory }) => {
   if (!moodHistory.length) return null;
 
-  // Process data for charts
+  
   const moodCounts = moodHistory.reduce((acc, mood) => {
     acc[mood.emotion] = (acc[mood.emotion] || 0) + 1;
     return acc;
@@ -96,10 +94,13 @@ const MoodCharts = ({ moodHistory }) => {
   );
   const trendData = moodHistory.map((m) => m.emotion);
 
-  const moodMap = { happy: 3, sad: 1, angry: 0, neutral: 2, excited: 4 };
-  const trendValues = trendData.map((m) => moodMap[m.toLowerCase()] || 2);
+  const moodMap = { angry: 0, sad: 1, neutral: 2, happy: 3, surprised: 4 };
+  const trendValues = trendData.map((m) => {
+  const key = m.toLowerCase().trim(); // normalize moods
+  return moodMap[key] !== undefined ? moodMap[key] : 2; // fallback still neutral
+});
   
-  // Custom Chart.js plugin to render emojis on line chart points
+  
   const pointEmojiPlugin = {
     id: "pointEmojiPlugin",
     afterDatasetsDraw: (chart) => {
@@ -112,7 +113,7 @@ const MoodCharts = ({ moodHistory }) => {
           ctx.font = "20px Arial";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          // Hide original point
+          
           chart.getDatasetMeta(i).data[index].options.radius = 0;
           ctx.fillText(emoji, point.x, point.y);
         });
@@ -140,90 +141,135 @@ const MoodCharts = ({ moodHistory }) => {
         <Card>
           <h3 className="text-xl font-bold mb-4 text-center text-gray-200">Mood Frequency</h3>
           <Bar
-            data={{
-              labels: moodLabels,
-              datasets: [
-                {
-                  label: "Count",
-                  data: moodData,
-                  backgroundColor: 'rgba(139, 92, 246, 0.6)',
-                  borderColor: 'rgba(167, 139, 250, 1)',
-                  borderWidth: 2,
-                  borderRadius: 8,
-                  hoverBackgroundColor: 'rgba(139, 92, 246, 0.8)',
-                },
-              ],
-            }}
-            options={{
-              responsive: true,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#d1d5db', stepSize: 1 } },
-                x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#d1d5db' } }
-              }
-            }}
-          />
+  data={{
+    labels: moodLabels,
+    datasets: [
+      {
+        label: "Count",
+        data: moodData,
+        backgroundColor: moodLabels.map((m) =>
+  m === "happy" ? "rgba(168, 85, 247, 0.7)" :
+  m === "sad" ? "rgba(147, 51, 234, 0.7)" :
+  m === "angry" ? "rgba(139, 92, 246, 0.7)" :
+  m === "neutral" ? "rgba(124, 58, 237, 0.7)" :
+  m === "surprised" ? "rgba(167, 139, 250, 0.7)" :
+  "rgba(168, 85, 247, 0.7)"
+),
+        borderColor: "transparent",
+        borderWidth: 2,
+        borderRadius: 20,
+        hoverBackgroundColor: moodLabels.map((m) =>
+  m === "happy" ? "rgba(168, 85, 247, 1)" :
+  m === "sad" ? "rgba(147, 51, 234, 1)" :
+  m === "angry" ? "rgba(139, 92, 246, 1)" :
+  m === "neutral" ? "rgba(124, 58, 237, 1)" :
+  m === "surprised" ? "rgba(167, 139, 250, 1)" :
+  "rgba(168, 85, 247, 1)"
+),
+      },
+    ],
+  }}
+  options={{
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (tooltipItem) => {
+            const emoji = moodIcons[tooltipItem.label.toLowerCase()] || "";
+            return `${emoji} ${tooltipItem.label}: ${tooltipItem.raw}`;
+          },
+        },
+      },
+    },
+    scales: {
+      y: { 
+        grid: { color: 'rgba(255, 255, 255, 0.1)' }, 
+        ticks: { color: '#d1d5db', stepSize: 1 } 
+      },
+      x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#d1d5db' } }
+    },
+  }}
+/>
+
         </Card>
 
         {/* Line Chart */}
         <Card>
-          <h3 className="text-xl font-bold mb-4 text-center text-gray-200">Mood Trend</h3>
-          <Line
-            plugins={[pointEmojiPlugin]}
-            data={{
-              labels: trendLabels,
-              datasets: [
-                {
-                  label: "Mood over Time",
-                  data: trendValues,
-                  fill: true,
-                  backgroundColor: "rgba(99, 102, 241, 0.2)",
-                  borderColor: "#818CF8",
-                  tension: 0.4,
-                  pointRadius: 10,
-                  pointHoverRadius: 12,
-                  pointBackgroundColor: 'transparent',
-                  pointBorderColor: 'transparent'
-                },
-              ],
-            }}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  callbacks: {
-                    label: (tooltipItem) => {
-                      const emoji = moodIcons[trendData[tooltipItem.dataIndex].toLowerCase()] || "😐";
-                      return `${emoji} ${trendData[tooltipItem.dataIndex]}`;
-                    },
-                  },
-                },
-              },
-              scales: {
-                y: {
-                  grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                  ticks: {
-                    color: '#d1d5db',
-                    stepSize: 1,
-                    callback: (val) => {
-                      const moodReverseMap = { 0: "Angry", 1: "Sad", 2: "Neutral", 3: "Happy", 4: "Excited" };
-                      return moodReverseMap[val] || '';
-                    },
-                  },
-                },
-                x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#d1d5db' } }
-              },
-            }}
-          />
-        </Card>
+  <h3 className="text-xl font-bold mb-4 text-center text-gray-200">Mood Trend</h3>
+  <Line
+  plugins={[pointEmojiPlugin]}
+  data={{
+    labels: trendLabels,
+    datasets: [
+      {
+        label: "Mood over Time",
+        data: trendValues,
+        fill: true,
+        backgroundColor: "rgba(147, 51, 234, 0.1)",
+        borderColor: "#8b5cf6",
+        tension: 0.4,
+        pointRadius: 8,
+        pointHoverRadius: 14,
+        pointBackgroundColor: 'transparent',
+        pointBorderColor: 'transparent'
+      },
+    ],
+  }}
+  options={{
+    responsive: true,
+    animation: { duration: 1000, easing: "easeOutQuart" }, // smooth line draw
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (tooltipItem) => {
+            const emoji = moodIcons[trendData[tooltipItem.dataIndex].toLowerCase()] || "😐";
+            return `${emoji} ${trendData[tooltipItem.dataIndex]}`;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        min: 0,
+        max: 4,
+        ticks: {
+          stepSize: 1,
+          color: "#d1d5db",
+          callback: (val) => {
+            const moodReverseMap = { 0: "Angry", 1: "Sad", 2: "Neutral", 3: "Happy", 4: "Excited", 5: "Surprised" };
+            return moodReverseMap[val] || '';
+          },
+        },
+        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+      },
+      x: {
+        ticks: { 
+          color: "#d1d5db", 
+          maxRotation: 45, 
+          minRotation: 45, 
+          autoSkip: true, 
+          maxTicksLimit: 6 
+        },
+        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+      },
+    },
+  }}
+/>
+
+</Card>
+
       </div>
     </motion.div>
   );
 };
 
-// Most Prevalent Mood Section
+
+
 const MostPrevalentMood = ({ moodHistory }) => {
+  const navigate = useNavigate(); // initialize navigate
+
   if (!moodHistory.length) return null;
 
   // Helper to normalize mood names (for counting + display)
@@ -241,6 +287,17 @@ const MostPrevalentMood = ({ moodHistory }) => {
     counts[a] > counts[b] ? a : b
   );
 
+  const handleExplore = () => {
+  navigate('/songlist', {
+    state: {
+      emotion: mostPrevalent.toLowerCase(),
+      songs: mostPrevalent.songs || [], // define some default songs array
+    },
+  });
+};
+
+
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -256,15 +313,16 @@ const MostPrevalentMood = ({ moodHistory }) => {
         <p className="text-xl sm:text-5xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
           {mostPrevalent}
         </p>
-        <a href={`/songs/${mostPrevalent.toLowerCase()}`} className="inline-block mt-6">
-          <AnimatedButton>
+        <div className="inline-block mt-6">
+          <AnimatedButton onClick={handleExplore}>
             Explore '{mostPrevalent}' Playlist
           </AnimatedButton>
-        </a>
+        </div>
       </Card>
     </motion.div>
   );
 };
+
 
 // --- MAIN PAGE COMPONENT ---
 

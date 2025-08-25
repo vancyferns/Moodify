@@ -1,7 +1,28 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import WaveSurfer from "wavesurfer.js";
+import Footer from "./components/Footer";
 import "./Songlist.css";
+import {
+  FaPlay,
+  FaPause,
+  FaStepForward,
+  FaStepBackward,
+  FaVolumeUp,
+  FaVolumeMute,
+} from "react-icons/fa";
+
+// The new WaveVisualizer component
+const WaveVisualizer = ({ isPlaying }) => {
+  return (
+    <div className={`wave-container ${isPlaying ? "playing" : ""}`}>
+      <div className="bar"></div>
+      <div className="bar"></div>
+      <div className="bar"></div>
+      <div className="bar"></div>
+      <div className="bar"></div>
+    </div>
+  );
+};
 
 const SongList = () => {
   const location = useLocation();
@@ -12,10 +33,10 @@ const SongList = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
+  const [prevVolume, setPrevVolume] = useState(1);
   const [isTitleOverflowing, setIsTitleOverflowing] = useState(false);
 
-  const waveformRef = useRef(null);
-  const waveSurferInstance = useRef(null);
+  const audioRef = useRef(new Audio());
   const titleRef = useRef(null);
 
   const currentSong = currentIndex !== null ? songs[currentIndex] : null;
@@ -41,25 +62,28 @@ const SongList = () => {
   const totalSeconds = songs.length * 180;
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  const formattedDuration = `${String(minutes).padStart(2, "0")}:${String(
-    seconds
-  ).padStart(2, "0")}`;
+  const formattedPlaylistDuration = `${String(minutes).padStart(
+    2,
+    "0"
+  )}:${String(seconds).padStart(2, "0")}`;
 
   const handlePlay = (index) => {
-    setCurrentIndex(index);
-    setIsPlaying(true);
+    if (currentIndex === index) {
+      togglePlayback();
+    } else {
+      setCurrentIndex(index);
+      setIsPlaying(true);
+    }
   };
 
   const togglePlayback = () => {
-    if (waveSurferInstance.current) {
-      if (isPlaying) {
-        waveSurferInstance.current.pause();
-        setIsPlaying(false);
-      } else {
-        waveSurferInstance.current.play();
-        setIsPlaying(true);
-      }
+    const audio = audioRef.current;
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.play();
     }
+    setIsPlaying(!isPlaying);
   };
 
   const playNext = () => {
@@ -79,12 +103,26 @@ const SongList = () => {
   const onVolumeChange = (e) => {
     const vol = Number(e.target.value);
     setVolume(vol);
-    if (waveSurferInstance.current) {
-      waveSurferInstance.current.setVolume(vol);
+    audioRef.current.volume = vol;
+    if (vol > 0) {
+      setPrevVolume(vol);
+    }
+  };
+
+  const toggleMute = () => {
+    const audio = audioRef.current;
+    if (volume > 0) {
+      setPrevVolume(volume);
+      setVolume(0);
+      audio.volume = 0;
+    } else {
+      setVolume(prevVolume);
+      audio.volume = prevVolume;
     }
   };
 
   const formatTime = (time) => {
+    if (isNaN(time)) return "00:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
@@ -94,13 +132,53 @@ const SongList = () => {
   };
 
   const onSeek = (e) => {
-    if (waveSurferInstance.current) {
-      const seekTime = Number(e.target.value);
-      waveSurferInstance.current.seekTo(seekTime / duration);
-    }
+    const seekTime = Number(e.target.value);
+    audioRef.current.currentTime = seekTime;
+    setCurrentTime(seekTime);
   };
 
-  // Check if title overflows
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (currentSong?.song_uri) {
+      audio.src = currentSong.song_uri;
+      audio.load();
+      audio.play();
+      setIsPlaying(true);
+    }
+
+    const setAudioData = () => {
+      setDuration(audio.duration);
+      setCurrentTime(audio.currentTime);
+    };
+
+    const updateTime = () => {
+      setCurrentTime(audio.currentTime);
+    };
+
+    const handleEnded = () => {
+      playNext();
+    };
+
+    audio.addEventListener("loadedmetadata", setAudioData);
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("ended", handleEnded);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", setAudioData);
+      audio.removeEventListener("timeupdate", updateTime);
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, [currentIndex, currentSong]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (isPlaying) {
+      audio.play().catch((e) => console.error("Playback failed:", e));
+    } else {
+      audio.pause();
+    }
+  }, [isPlaying]);
+
   useEffect(() => {
     if (titleRef.current) {
       setIsTitleOverflowing(
@@ -109,59 +187,20 @@ const SongList = () => {
     }
   }, [currentSong]);
 
-  // Initialize & Load WaveSurfer
-  useEffect(() => {
-    if (currentSong?.song_uri) {
-      if (waveSurferInstance.current) {
-        waveSurferInstance.current.destroy();
-      }
-
-      waveSurferInstance.current = WaveSurfer.create({
-        container: waveformRef.current,
-        waveColor: "#a855f7",
-        progressColor: "#9333ea",
-        cursorColor: "#c084fc",
-        barWidth: 2,
-        responsive: true,
-        height: 20,
-        normalize: true,
-      });
-
-      waveSurferInstance.current.load(currentSong.song_uri);
-
-      waveSurferInstance.current.on("ready", () => {
-        setDuration(waveSurferInstance.current.getDuration());
-        waveSurferInstance.current.setVolume(volume);
-        if (isPlaying) {
-          waveSurferInstance.current.play();
-        }
-      });
-
-      waveSurferInstance.current.on("audioprocess", () => {
-        if (
-          waveSurferInstance.current &&
-          waveSurferInstance.current.isPlaying()
-        ) {
-          setCurrentTime(waveSurferInstance.current.getCurrentTime());
-        }
-      });
-
-      waveSurferInstance.current.on("finish", () => {
-        playNext();
-      });
-    }
-  }, [currentIndex, currentSong, isPlaying]);
-
   return (
     <>
-      <div className="songlist-container" style={{ paddingBottom: "120px" }}>
-        <div className="songlist-header">
-          <img src={songs[0]?.song_image} alt="Playlist Cover" />
-          <div>
+      <div className="songlist-container " style={{ paddingBottom: "120px" }}>
+        <div className="songlist-header mt-4">
+          <img
+            src={songs[0]?.song_image}
+            alt="Playlist Cover"
+            className="w-24 h-24 md:w-48 md:h-48 rounded-lg shadow-lg"
+          />
+          <div className="flex flex-col justify-end">
             <p className="songlist-header-title">Mood Playlist</p>
             <h1 className="songlist-header-main">{emotionTitle}</h1>
             <p className="songlist-header-sub">
-              {songs.length} songs • {formattedDuration}
+              {songs.length} songs • {formattedPlaylistDuration}
             </p>
           </div>
         </div>
@@ -170,12 +209,12 @@ const SongList = () => {
           <table className="songlist-table">
             <thead>
               <tr>
-                <th style={{ width: "5%" }}>#</th>
-                <th style={{ width: "10%" }}>Cover</th>
-                <th style={{ width: "25%" }}>Title</th>
-                <th style={{ width: "25%" }}>Artist</th>
-                <th style={{ width: "15%" }}>Duration</th>
-                <th style={{ width: "20%" }}>▶ Play</th>
+                <th className="w-[5%]">#</th>
+                <th className="w-[10%] hidden sm:table-cell">Cover</th>
+                <th className="w-[40%] sm:w-[25%]">Title</th>
+                <th className="w-[30%] sm:w-[25%]">Artist</th>
+                <th className="w-[15%] hidden md:table-cell">Duration</th>
+                <th className="w-[20%] text-center"></th>
               </tr>
             </thead>
             <tbody>
@@ -185,18 +224,28 @@ const SongList = () => {
                   className={currentIndex === index ? "playing" : ""}
                 >
                   <td>{index + 1}</td>
-                  <td>
-                    <img src={song.song_image} alt="cover" />
+                  <td className="hidden sm:table-cell">
+                    <img
+                      src={song.song_image}
+                      alt="cover"
+                      className="w-12 h-12 object-cover rounded"
+                    />
                   </td>
                   <td>{song.song_title}</td>
                   <td>{song.artist}</td>
-                  <td>{song.duration || "03:00"}</td>
-                  <td>
+                  <td className="hidden md:table-cell">
+                    {song.duration || "03:00"}
+                  </td>
+                  <td className="text-center">
                     <button
                       onClick={() => handlePlay(index)}
-                      className="songlist-play-button"
+                      className="text-white hover:text-purple-400"
                     >
-                      {currentIndex === index && isPlaying ? "Pause" : "Play"}
+                      {currentIndex === index && isPlaying ? (
+                        <FaPause size={20} />
+                      ) : (
+                        <FaPlay size={20} />
+                      )}
                     </button>
                   </td>
                 </tr>
@@ -206,70 +255,70 @@ const SongList = () => {
         </div>
       </div>
 
+      
+
       {currentSong && (
-        <div className="songlist-bottom-player fixed bottom-0 left-0 w-full bg-gray-900 text-white px-4 py-3 md:px-6 md:py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2 shadow-lg z-50">
-          
-          {/* Main Desktop Player Layout */}
-          <div className="hidden md:flex flex-grow items-center justify-between gap-8 w-full">
-            {/* Song Info (LEFT) */}
-            <div className="flex items-center gap-4 whitespace-nowrap overflow-hidden flex-grow justify-start basis-1/3">
+        <div className="fixed bottom-0 left-0 w-full bg-gray-900 text-white py-4 px-6 md:px-8 shadow-lg z-50">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Song Info */}
+            <div className="flex items-center gap-4 w-full md:w-auto overflow-hidden">
               <img
                 src={currentSong.song_image || "/default-cover.png"}
                 alt="cover"
-                className="w-12 h-12 object-cover rounded"
+                className="w-16 h-16 object-cover rounded shadow-lg"
               />
-              <div className="song-title-container overflow-hidden" ref={titleRef}>
-                <h6
-                  className={`text-md md:text-lg font-semibold ${
-                    isTitleOverflowing ? "animate-marquee" : "truncate"
-                  }`}
-                >
-                  {currentSong.song_title || "Unknown Title"}
-                </h6>
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <div className="flex items-center gap-2">
+                  <h6
+                    className={`text-lg md:text-xl font-semibold mb-1 ${
+                      isTitleOverflowing ? "animate-marquee" : "truncate"
+                    }`}
+                    ref={titleRef}
+                  >
+                    {currentSong.song_title || "Unknown Title"}
+                  </h6>
+                  {/* Conditionally render the WaveVisualizer */}
+                  {isPlaying && <WaveVisualizer isPlaying={isPlaying} />}
+                </div>
                 <p className="text-sm md:text-base text-gray-400 truncate">
                   {currentSong.artist || "Unknown Artist"}
                 </p>
               </div>
             </div>
 
-            {/* Playback Controls and Seek Bar (CENTER) */}
-            <div className="flex flex-col items-center justify-center gap-2 w-full md:w-auto flex-grow-0 basis-1/3">
-              <div className="flex items-center justify-center gap-4 w-full">
+            {/* Playback Controls & Progress Bar */}
+            <div className="flex flex-col items-center w-full md:flex-1 md:max-w-xl px-4 md:px-0">
+              <div className="flex items-center gap-8 mb-4">
                 <button
                   onClick={playPrev}
-                  className="songlist-control-button text-xl md:text-2xl hover:text-purple-400"
+                  className="text-xl md:text-2xl text-purple-400 hover:text-purple-600 transition-colors"
                 >
-                  {" "}
-                  ⏮{" "}
+                  <FaStepBackward />
                 </button>
                 <button
                   onClick={togglePlayback}
-                  className="songlist-play-toggle text-3xl md:text-4xl hover:text-purple-400"
+                  className="text-4xl md:text-5xl text-purple-400 hover:text-purple-600 transition-colors"
                 >
-                  {" "}
-                  {isPlaying ? "⏸" : "▶"}{" "}
+                  {isPlaying ? <FaPause /> : <FaPlay />}
                 </button>
                 <button
                   onClick={playNext}
-                  className="songlist-control-button text-xl md:text-2xl hover:text-purple-400"
+                  className="text-xl md:text-2xl text-purple-400 hover:text-purple-600 transition-colors"
                 >
-                  {" "}
-                  ⏭{" "}
+                  <FaStepForward />
                 </button>
               </div>
-              {/* Seek Bar and Time */}
               <div className="flex items-center gap-2 w-full">
                 <span className="text-xs text-gray-400">
                   {formatTime(currentTime)}
                 </span>
                 <input
                   type="range"
-                  min={0}
+                  min="0"
                   max={duration}
-                  step={0.01}
                   value={currentTime}
                   onChange={onSeek}
-                  className="w-full h-1 accent-purple-400 cursor-pointer"
+                  className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                 />
                 <span className="text-xs text-gray-400">
                   {formatTime(duration)}
@@ -277,106 +326,25 @@ const SongList = () => {
               </div>
             </div>
 
-            {/* Volume Control (RIGHT) */}
-            <div className="flex items-center justify-end flex-grow basis-1/3">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🔊</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={volume}
-                  onChange={onVolumeChange}
-                  className="w-24 h-1 accent-purple-400 cursor-pointer"
-                />
-              </div>
-            </div>
-          </div>
-          
-          {/* Main Mobile Player Layout */}
-          <div className="flex flex-col md:hidden w-full gap-4">
-            {/* Top Row: Song Info and Volume */}
-            <div className="flex items-center justify-between w-full">
-              {/* Song Info (LEFT) */}
-              <div className="flex items-center gap-4 max-w-[calc(100%-120px)]">
-                <img
-                  src={currentSong.song_image || "/default-cover.png"}
-                  alt="cover"
-                  className="w-12 h-12 object-cover rounded"
-                />
-                <div className="overflow-hidden">
-                  <h6 className="text-md font-semibold truncate">
-                    {currentSong.song_title || "Unknown Title"}
-                  </h6>
-                  <p className="text-sm text-gray-400 truncate">
-                    {currentSong.artist || "Unknown Artist"}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Volume Control (RIGHT) */}
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="text-xl">🔊</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={volume}
-                  onChange={onVolumeChange}
-                  className="w-24 h-1 accent-purple-400 cursor-pointer"
-                />
-              </div>
-            </div>
-            
-            {/* Middle Row: Playback Controls */}
-            <div className="flex items-center justify-center gap-4">
+            {/* Volume Control */}
+            <div className="hidden md:flex items-center gap-2 w-full md:w-auto mt-4 md:mt-0 px-4 md:px-0">
               <button
-                onClick={playPrev}
-                className="songlist-control-button text-xl hover:text-purple-400"
+                onClick={toggleMute}
+                className="text-md md:text-lg text-purple-400 hover:text-purple-600 transition-colors"
               >
-                {" "}
-                ⏮{" "}
+                {volume > 0 ? <FaVolumeUp /> : <FaVolumeMute />}
               </button>
-              <button
-                onClick={togglePlayback}
-                className="songlist-play-toggle text-3xl hover:text-purple-400"
-              >
-                {" "}
-                {isPlaying ? "⏸" : "▶"}{" "}
-              </button>
-              <button
-                onClick={playNext}
-                className="songlist-control-button text-xl hover:text-purple-400"
-              >
-                {" "}
-                ⏭{" "}
-              </button>
-            </div>
-            
-            {/* Bottom Row: Seek Bar and Time */}
-            <div className="flex items-center gap-2 w-full">
-              <span className="text-xs text-gray-400">
-                {formatTime(currentTime)}
-              </span>
               <input
                 type="range"
-                min={0}
-                max={duration}
-                step={0.01}
-                value={currentTime}
-                onChange={onSeek}
-                className="w-full h-1 accent-purple-400 cursor-pointer"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volume}
+                onChange={onVolumeChange}
+                className="w-24 md:w-32 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
               />
-              <span className="text-xs text-gray-400">
-                {formatTime(duration)}
-              </span>
             </div>
           </div>
-          
-          {/* Waveform Ref (Hidden) */}
-          <div ref={waveformRef} className="w-full mt-2 hidden"></div>
         </div>
       )}
     </>
@@ -384,275 +352,3 @@ const SongList = () => {
 };
 
 export default SongList;
-
-// import React, { useState, useEffect, useRef } from "react";
-// import { useLocation } from "react-router-dom";
-// import WaveSurfer from "wavesurfer.js";
-// import "./Songlist.css";
-
-// const SongList = () => {
-//   const location = useLocation();
-//   const { songs = [], emotion = "Unknown" } = location.state || {};
-
-//   const [currentIndex, setCurrentIndex] = useState(null);
-//   const [isPlaying, setIsPlaying] = useState(false);
-//   const [currentTime, setCurrentTime] = useState(0);
-//   const [duration, setDuration] = useState(0);
-//   const [volume, setVolume] = useState(1);
-//   const [isTitleOverflowing, setIsTitleOverflowing] = useState(false);
-
-//   const waveformRef = useRef(null);
-//   const waveSurferInstance = useRef(null);
-//   const titleRef = useRef(null);
-
-//   const currentSong = currentIndex !== null ? songs[currentIndex] : null;
-
-//   if (songs.length === 0) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-b from-[#0f0f1a] to-[#1a1a2e] text-white flex items-center justify-center">
-//         <div className="text-center">
-//           <h1 className="text-4xl font-bold mb-4">No Songs Found</h1>
-//           <p className="text-gray-400">
-//             There were no songs provided for the "{emotion}" mood.
-//           </p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   const emotionTitle =
-//     emotion.toLowerCase() === "happy"
-//       ? "😊 Happy Songs"
-//       : `${emotion.charAt(0).toUpperCase() + emotion.slice(1)} Songs`;
-
-//   const totalSeconds = songs.length * 180;
-//   const minutes = Math.floor(totalSeconds / 60);
-//   const seconds = totalSeconds % 60;
-//   const formattedDuration = `${String(minutes).padStart(2, "0")}:${String(
-//     seconds
-//   ).padStart(2, "0")}`;
-
-//   const handlePlay = (index) => {
-//     setCurrentIndex(index);
-//     setIsPlaying(true);
-//   };
-
-//   const togglePlayback = () => {
-//     if (waveSurferInstance.current) {
-//       if (isPlaying) {
-//         waveSurferInstance.current.pause();
-//         setIsPlaying(false);
-//       } else {
-//         waveSurferInstance.current.play();
-//         setIsPlaying(true);
-//       }
-//     }
-//   };
-
-//   const playNext = () => {
-//     if (currentIndex === null) return;
-//     const nextIndex = (currentIndex + 1) % songs.length;
-//     setCurrentIndex(nextIndex);
-//     setIsPlaying(true);
-//   };
-
-//   const playPrev = () => {
-//     if (currentIndex === null) return;
-//     const prevIndex = (currentIndex - 1 + songs.length) % songs.length;
-//     setCurrentIndex(prevIndex);
-//     setIsPlaying(true);
-//   };
-
-//   const onVolumeChange = (e) => {
-//     const vol = Number(e.target.value);
-//     setVolume(vol);
-//     if (waveSurferInstance.current) {
-//       waveSurferInstance.current.setVolume(vol);
-//     }
-//   };
-
-//   const formatTime = (time) => {
-//     const minutes = Math.floor(time / 60);
-//     const seconds = Math.floor(time % 60);
-//     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
-//       2,
-//       "0"
-//     )}`;
-//   };
-
-//   const onSeek = (e) => {
-//     if (waveSurferInstance.current) {
-//       const seekTime = Number(e.target.value);
-//       waveSurferInstance.current.seekTo(seekTime / duration);
-//     }
-//   };
-
-//   // Check if title overflows
-//   useEffect(() => {
-//     if (titleRef.current) {
-//       setIsTitleOverflowing(
-//         titleRef.current.scrollWidth > titleRef.current.clientWidth
-//       );
-//     }
-//   }, [currentSong]);
-
-//   // Initialize & Load WaveSurfer
-//   useEffect(() => {
-//     if (currentSong?.song_uri) {
-//       if (waveSurferInstance.current) {
-//         waveSurferInstance.current.destroy();
-//       }
-
-//       waveSurferInstance.current = WaveSurfer.create({
-//         container: waveformRef.current,
-//         waveColor: "#a855f7",
-//         progressColor: "#9333ea",
-//         cursorColor: "#c084fc",
-//         barWidth: 2,
-//         responsive: true,
-//         height: 20,
-//         normalize: true,
-//       });
-
-//       waveSurferInstance.current.load(currentSong.song_uri);
-
-//       waveSurferInstance.current.on("ready", () => {
-//         setDuration(waveSurferInstance.current.getDuration());
-//         waveSurferInstance.current.setVolume(volume);
-//         if (isPlaying) {
-//           waveSurferInstance.current.play();
-//         }
-//       });
-
-//       waveSurferInstance.current.on("audioprocess", () => {
-//         if (
-//           waveSurferInstance.current &&
-//           waveSurferInstance.current.isPlaying()
-//         ) {
-//           setCurrentTime(waveSurferInstance.current.getCurrentTime());
-//         }
-//       });
-
-//       waveSurferInstance.current.on("finish", () => {
-//         playNext();
-//       });
-//     }
-//   }, [currentIndex, currentSong, isPlaying]);
-
-//   return (
-//     <>
-//       <div className="songlist-container" style={{ paddingBottom: "120px" }}>
-//         <div className="songlist-header">
-//           <img src={songs[0]?.song_image} alt="Playlist Cover" />
-//           <div>
-//             <p className="songlist-header-title">Mood Playlist</p>
-//             <h1 className="songlist-header-main">{emotionTitle}</h1>
-//             <p className="songlist-header-sub">
-//               {songs.length} songs • {formattedDuration}
-//             </p>
-//           </div>
-//         </div>
-
-//         <div className="songlist-table-container">
-//           <table className="songlist-table">
-//             <thead>
-//               <tr>
-//                 <th style={{ width: "5%" }}>#</th>
-//                 <th style={{ width: "10%" }}>Cover</th>
-//                 <th style={{ width: "25%" }}>Title</th>
-//                 <th style={{ width: "25%" }}>Artist</th>
-//                 <th style={{ width: "15%" }}>Duration</th>
-//                 <th style={{ width: "20%" }}>▶ Play</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {songs.map((song, index) => (
-//                 <tr
-//                   key={index}
-//                   className={currentIndex === index ? "playing" : ""}
-//                 >
-//                   <td>{index + 1}</td>
-//                   <td>
-//                     <img src={song.song_image} alt="cover" />
-//                   </td>
-//                   <td>{song.song_title}</td>
-//                   <td>{song.artist}</td>
-//                   <td>{song.duration || "03:00"}</td>
-//                   <td>
-//                     <button
-//                       onClick={() => handlePlay(index)}
-//                       className="songlist-play-button"
-//                     >
-//                       {currentIndex === index && isPlaying ? "Pause" : "Play"}
-//                     </button>
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       </div>
-
-
-//       {currentSong && (
-//         <div className="songlist-bottom-player fixed bottom-0 left-0 w-full bg-gray-900 text-white px-4 py-3 md:px-6 md:py-4 flex flex-col gap-2 shadow-lg z-50">
-//           {/* Top Row — Song Info & Controls */}
-//           <div className="flex items-center justify-between w-full flex-wrap gap-2 md:flex-nowrap">
-//             {/* Song Info */}
-//             <div className="flex items-center gap-4 max-w-[50%] md:max-w-[30%] whitespace-nowrap overflow-hidden">
-//               <img
-//                 src={currentSong.song_image || "/default-cover.png"}
-//                 alt="cover"
-//                 className="w-12 h-12 object-cover rounded"
-//               />
-//               <div
-//                 className="song-title-container overflow-hidden"
-//                 ref={titleRef}
-//               >
-//                 <h6
-//                   className={`text-md md:text-lg font-semibold ${
-//                     isTitleOverflowing ? "animate-marquee" : "truncate"
-//                   }`}
-//                 >
-//                   {currentSong.song_title || "Unknown Title"}
-//                 </h6>
-//                 <p className="text-sm md:text-base text-gray-400 truncate">
-//                   {currentSong.artist || "Unknown Artist"}
-//                 </p>
-//               </div>
-//             </div>
-
-//             {/* Playback Controls & Volume */}
-//             <div className="flex items-center justify-center gap-4 w-full md:w-auto md:ml-auto">
-//               <button
-//                 onClick={playPrev}
-//                 className="songlist-control-button text-xl md:text-2xl hover:text-purple-400"
-//               >
-//                 ⏮
-//               </button>
-//               <button
-//                 onClick={togglePlayback}
-//                 className="songlist-play-toggle text-3xl md:text-4xl hover:text-purple-400"
-//               >
-//                 {isPlaying ? "⏸" : "▶"}
-//               </button>
-//               <button
-//                 onClick={playNext}
-//                 className="songlist-control-button text-xl md:text-2xl hover:text-purple-400"
-//               >
-//                 ⏭
-//               </button>
-//              
-//             </div>
-//             {/* Volume Control for small screens */}
-//            
-//           </div>
-//           {/* Waveform */}
-//           <div ref={waveformRef} className="w-full mt-2"></div>
-//         </div>
-//       )}
-//     </>
-//   );
-// };
-
-// export default SongList;

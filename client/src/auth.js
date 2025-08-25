@@ -4,9 +4,6 @@ import CryptoJS from "crypto-js";
 const API_BASE = import.meta.env.VITE_AUTH_API || "http://localhost:5002";
 const USE_MOCK = (import.meta.env.VITE_USE_MOCK_AUTH || "false") === "true";
 
-// -------------------- UTILITIES --------------------
-
-
 function sha256Hash(str) {
   return CryptoJS.SHA256(str).toString();
 }
@@ -21,7 +18,7 @@ export const loadSession = () => {
 };
 export const clearSession = () => localStorage.removeItem("moodify_auth");
 
-// -------------------- SIGNUP --------------------
+//  SIGNUP 
 export async function signup({ name, email, password }) {
   if (USE_MOCK) {
     const hashed = await bcrypt.hash(password, 10);
@@ -36,7 +33,7 @@ export async function signup({ name, email, password }) {
     return { ok: true, data: session };
   }
 
-  const shaHashed = sha256Hash(password); // frontend deterministic hash
+  const shaHashed = sha256Hash(password); // frontend hash
   const res = await fetch(`${API_BASE}/api/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -51,7 +48,7 @@ export async function signup({ name, email, password }) {
   return { ok: true, data };
 }
 
-// -------------------- SIGNIN (USER) --------------------
+// SIGNIN 
 export async function signin({ email, password }) {
   if (USE_MOCK) {
     const users = JSON.parse(localStorage.getItem("moodify_users") || "[]");
@@ -79,7 +76,7 @@ export async function signin({ email, password }) {
   return { ok: true, data };
 }
 
-// -------------------- SIGNIN (ADMIN) --------------------
+//SIGNIN (ADMIN) 
 export async function signinAdmin({ email, password }) {
   if (USE_MOCK) {
     const admins = JSON.parse(localStorage.getItem("moodify_admins") || "[]");

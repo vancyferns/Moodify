@@ -49,7 +49,7 @@ const Navbar = () => {
 
   const firstLetter = user?.name?.[0] || "U";
 
-  // Close profile dropdown on outside click
+  
   useEffect(() => {
   const onDocClick = (e) => {
     if (
@@ -73,12 +73,12 @@ const Navbar = () => {
     navigate("/account-selection");
   };
 
-  // Helper for avatar fallback initial
+ 
   const initial = (user?.name || user?.email || "U").trim().charAt(0).toUpperCase();
 
 
   return (
-    // UPDATED: max-w-lg changed to max-w-4xl to increase width
+    
     <nav 
       className="fixed top-4 left-1/2 -translate-x-1/2 z-50 
                  w-[95%] max-w-4xl 
@@ -98,15 +98,13 @@ const Navbar = () => {
         </Link>
       </div>
 
-      {/* Desktop Menu - UPDATED with all links */}
       <div className="hidden md:flex items-center space-x-6 text-sm">
         <Link to="/" className="hover:text-purple-400 transition-colors">Home</Link>
         <Link to="/about" className="hover:text-purple-400 transition-colors">About</Link>
         <Link to="/how-it-works" className="hover:text-purple-400 transition-colors">How it works</Link>
         <Link to="/songs" className="hover:text-purple-400 transition-colors">Songs</Link>
         <Link to="/history" className="hover:text-purple-400 transition-colors">History</Link>
-        {/* <Link to="/account" className="hover:text-purple-400 transition-colors ml-4 px-4 py-2 rounded-full bg-purple-600/50 hover:bg-purple-600/80">SignUp / SignIn</Link>  */}
-           {/* If NOT logged in: keep SignUp / SignIn button */}
+        
         {!user && (
           <Link
             to="/account-selection"

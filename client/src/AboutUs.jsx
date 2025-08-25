@@ -4,7 +4,6 @@ import moodifyLogo from "./assets/Moodify_logo3i.png";
 import Footer from "./components/Footer";
 import AnimatedButton from "./components/AnimatedButton";
 import TeamCard from "./components/TeamCard";
-// 1. useNavigate is already imported, which is great.
 import { useNavigate } from "react-router-dom";
 
 const team = [
@@ -52,7 +51,7 @@ const team = [
 
 const Bubble = ({ className }) => <div className={`absolute rounded-full blur-3xl animate-pulse ${className}`} />;
 
-// 2. Accept `Maps` as a prop here
+// Maps prop 
 const Hero = ({ navigate }) => (
     <div className="relative z-10 max-w-4xl mx-auto text-center mb-12 mt-8">
       <h1 className="text-5xl sm:text-6xl font-extrabold mb-10">
@@ -64,7 +63,6 @@ const Hero = ({ navigate }) => (
         We’re a team of dreamers, technologists, and music lovers dedicated to making every beat match your emotions.
       </p>
       <div className="flex justify-center">
-          {/* 3. This onClick now works perfectly */}
           <AnimatedButton onClick={() => navigate("/Choose")}>
               Experience Moodify
           </AnimatedButton>
@@ -133,7 +131,7 @@ const Team = () => (
 
 
 export default function AboutUs() {
-  // 4. Call the hook here in the main component
+  // hook call in main component
   const navigate = useNavigate();
 
   return (
@@ -142,8 +140,8 @@ export default function AboutUs() {
         <Bubble className="top-20 left-10 w-32 h-32 bg-purple-400/10" />
         <Bubble className="bottom-32 right-16 w-40 h-40 bg-pink-400/15" />
         <Bubble className="top-1/2 left-1/2 w-96 h-96 bg-purple-300/10 -translate-x-1/2 -translate-y-1/2" />
-{/* {checking} */}
-        {/* 5. Pass `Maps` down to the Hero component */}
+
+        {/* `Maps`  to Hero */}
         <Hero navigate={navigate} />
         <Journey />
         <Team />
