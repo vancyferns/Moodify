@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserCircle, LogOut, ChevronDown } from "lucide-react";
 import Moodify_logo from "../assets/Moodify_logo3i.png";
-import wavesgif from "../assets/waves55.gif";
+import wavesgif from "../assets/waves2.gif";
 import { useAuth } from "../AuthContext"; 
 import { Menu, X } from "lucide-react";
 

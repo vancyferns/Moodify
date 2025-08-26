@@ -341,20 +341,27 @@ const EmotionDetection = () => {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPlaybackURL(url);
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-        videoRef.current.src = url;
-        videoRef.current.muted = false;
-        videoRef.current.controls = true;
-        videoRef.current.autoplay = true;
-      }
-      analyzeVideo(file);
+  const file = e.target.files[0];
+  if (file) {
+    // Reset old state
+    setResult(null);
+    setShowButton(false);
+    setIsApproved(false);
+
+    const url = URL.createObjectURL(file);
+    setPlaybackURL(url);
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+      videoRef.current.src = url;
+      videoRef.current.muted = false;
+      videoRef.current.controls = true;
+      videoRef.current.autoplay = true;
     }
-  };
+    analyzeVideo(file);
+  }
+};
+
 
   const analyzeVideo = async (videoBlob) => {
     setLoading(true);
@@ -390,56 +397,59 @@ const EmotionDetection = () => {
   };
 
   const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  // Reset old state
+  setResult(null);
+  setShowButton(false);
+  setIsApproved(false);
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream; // Live preview
+      videoRef.current.controls = false;
+      videoRef.current.muted = true;
+      videoRef.current.play();
+    }
+
+    recordedChunksRef.current = [];
+    const mediaRecorder = new MediaRecorder(stream);
+    mediaRecorderRef.current = mediaRecorder;
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) recordedChunksRef.current.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      setPlaybackURL(url);
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream; // Live preview
-        videoRef.current.controls = false;
-        videoRef.current.muted = true;
+        videoRef.current.srcObject = null;
+        videoRef.current.src = url;
+        videoRef.current.muted = false;
+        videoRef.current.controls = true;
+        videoRef.current.autoplay = true;
         videoRef.current.play();
       }
 
-      recordedChunksRef.current = [];
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
+      analyzeVideo(blob);
+      stream.getTracks().forEach(track => track.stop());
+    };
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) recordedChunksRef.current.push(event.data);
-      };
+    mediaRecorder.start();
+    setIsRecording(true);
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-        const url = URL.createObjectURL(blob);
-        setPlaybackURL(url);
-
-        // Switch video element to playback mode
-        if (videoRef.current) {
-          videoRef.current.srcObject = null;  // Stop live preview
-          videoRef.current.src = url;
-          videoRef.current.muted = false;
-          videoRef.current.controls = true;
-          videoRef.current.autoplay = true;
-          videoRef.current.play();
-        }
-
-        analyzeVideo(blob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-
-      // Auto-stop after 10 seconds
-      setTimeout(() => {
-        if (mediaRecorder.state === "recording") mediaRecorder.stop();
-        setIsRecording(false);
-      }, 10000);
-    } catch (error) {
-      console.error("Error accessing media devices.", error);
-      setResult({ error: "Could not access camera/microphone. Please check permissions." });
-    }
-  };
+    setTimeout(() => {
+      if (mediaRecorder.state === "recording") mediaRecorder.stop();
+      setIsRecording(false);
+    }, 10000);
+  } catch (error) {
+    console.error("Error accessing media devices.", error);
+    setResult({ error: "Could not access camera/microphone. Please check permissions." });
+  }
+};
 
   const handleSuggestions = () => {
     if (!result?.emotion) return;
@@ -505,12 +515,11 @@ const EmotionDetection = () => {
 )}
 
 
-        {/* Emotion result */}
-        {/* Emotion result */}
+       
 {isApproved && result?.emotion && (
   <div className="text-center space-y-4 mt-6">
     <div className="flex justify-center mb-4">
-      <div className="relative w-48 h-48 flex items-center justify-center">
+      <div className="relative w-48 h-48 object-cover flex items-center justify-center">
         <div className={`absolute inset-0 rounded-full blur-md opacity-60 z-0 ${
           result.emotion === 'happy'
             ? 'bg-gradient-to-br from-yellow-400 via-yellow-100 to-yellow-500'
@@ -534,7 +543,7 @@ const EmotionDetection = () => {
             : null
           }
           alt={result.emotion}
-          className="relative z-10 w-full h-full object-contain shadow-lg"
+          className="relative z-10 w-full h-full object-contain shadow-md"
         />
       </div>
     </div>
