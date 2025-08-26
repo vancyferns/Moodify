@@ -41,7 +41,7 @@
 //     if (lower === "surprise") return "surprised";
 //     return lower;
 //   };
-  
+
 //   const handleFileChange = (e) => {
 //     const file = e.target.files[0];
 //     if (file) {
@@ -177,7 +177,7 @@
 //       />
 //       <div className="absolute w-[500px] h-[500px] rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-pink-500 opacity-30 blur-3xl animate-pulse z-0"></div>
 
-      
+
 //       <div className="w-full max-w-2xl text-center z-10 rounded-3xl p-8 bg-gradient-to-b from-white/10 via-white/5 to-transparent backdrop-blur-lg shadow-lg ">
 //         <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 drop-shadow-lg">
 //           Emotion Detection
@@ -185,7 +185,7 @@
 //         <p className="text-sm text-gray-300 mb-8">Upload or record a video to detect your emotion</p>
 
 //         <div className="flex justify-center gap-4 flex-wrap mb-6">
-         
+
 //           <AnimatedButton
 //             onClick={handleUploadClick}
 //             disabled={isRecording || loading}
@@ -200,7 +200,7 @@
 //             onChange={handleFileChange}
 //           />
 
-         
+
 //           <AnimatedButton
 //             onClick={startRecording}
 //             disabled={isRecording || loading}
@@ -209,7 +209,7 @@
 //           </AnimatedButton>
 //         </div>
 
-        
+
 //         <div className="text-center space-y-2 min-h-[24px]">
 //           {loading && <p className="text-purple-300 animate-pulse">Analyzing video...</p>}
 //           {result?.error && <p className="text-red-400 font-medium">Error: {result.error}</p>}
@@ -306,6 +306,7 @@ import surpriseImg from './assets/surprise.png';
 import { API_BASE_URL } from "./config";
 import wavesgif from "./assets/waves2.gif";
 import AnimatedButton from './components/AnimatedButton';
+import { trackMood } from "./trackMood";
 
 const EmotionDetection = () => {
   const [result, setResult] = useState(null);
@@ -321,17 +322,22 @@ const EmotionDetection = () => {
   const recordedChunksRef = useRef([]);
   const fileInputRef = useRef(null);
 
+  // useEffect(() => {
+  //   if (result?.emotion) {
+  //     const newMood = {
+  //       emotion: result.emotion,
+  //       timestamp: new Date().toISOString(),
+  //     };
+  //     const history = JSON.parse(localStorage.getItem("moodHistory")) || [];
+  //     const newHistory = [newMood, ...history].slice(0, 10);
+  //     localStorage.setItem("moodHistory", JSON.stringify(newHistory));
+  //   }
+  // }, [result]);
   useEffect(() => {
-    if (result?.emotion) {
-      const newMood = {
-        emotion: result.emotion,
-        timestamp: new Date().toISOString(),
-      };
-      const history = JSON.parse(localStorage.getItem("moodHistory")) || [];
-      const newHistory = [newMood, ...history].slice(0, 10);
-      localStorage.setItem("moodHistory", JSON.stringify(newHistory));
-    }
-  }, [result]);
+  if (result?.emotion) {
+    trackMood(result.emotion);
+  }
+}, [result]);
 
   const normalizeEmotion = (emotion) => {
     if (!emotion) return "unknown";

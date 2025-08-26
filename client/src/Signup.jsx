@@ -8,6 +8,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import wavesgif from "./assets/waves2.gif";
 import toast from "react-hot-toast";
+import { importHistory } from "./historyApi";
+import { getGuestHistory} from "./historyLocal";
+
 
 const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -41,9 +44,18 @@ export default function Signup() {
     toast.success("Account created successfully!");
     setSession(res.data);
 
+const uid = res.data?.user?.id;
+if (uid) {
+   const local = getGuestHistory();
+   if (local.length) {
+     try { await importHistory(uid, local); } catch (e) { console.error(e); }
+  }
+}
+
     setTimeout(() => {
      navigate("/");
      }, 1200);
+
   };
 
   return (

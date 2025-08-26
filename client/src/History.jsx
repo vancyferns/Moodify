@@ -15,9 +15,11 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import AnimatedButton from "./components/AnimatedButton"; // --- 1. IMPORT ADDED ---
+import AnimatedButton from "./components/AnimatedButton"; 
+import { useAuth } from "./AuthContext";
+import { fetchHistory } from "./historyApi";
+import { getGuestHistory } from "./historyLocal";
 
-// Register necessary Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -29,7 +31,6 @@ ChartJS.register(
   Legend
 );
 
-// --- DATA & CONFIGURATION ---
 
 const moodIcons = {
   happy: "😊",
@@ -39,7 +40,9 @@ const moodIcons = {
   surprised: "😲",
 };
 
+// --- REUSABLE UI COMPONENTS ---
 
+// Animated background bubble component
 const Bubble = ({ className }) => (
   <div className={`absolute rounded-full filter blur-3xl animate-pulse ${className}`} />
 );
@@ -57,7 +60,7 @@ const Card = ({ children, className }) => (
   </motion.div>
 );
 
-
+// --- PAGE SECTIONS ---
 
 const Hero = () => (
   <motion.div
@@ -80,7 +83,12 @@ const Hero = () => (
 const MoodCharts = ({ moodHistory }) => {
   if (!moodHistory.length) return null;
 
-  
+
+  const sortedHistory = [...moodHistory].sort((a, b) => 
+  new Date(a.timestamp) - new Date(b.timestamp)
+);
+
+  // Process data for charts
   const moodCounts = moodHistory.reduce((acc, mood) => {
     acc[mood.emotion] = (acc[mood.emotion] || 0) + 1;
     return acc;
@@ -89,18 +97,24 @@ const MoodCharts = ({ moodHistory }) => {
   const moodLabels = Object.keys(moodCounts);
   const moodData = Object.values(moodCounts);
 
-  const trendLabels = moodHistory.map((m) =>
-    new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  );
-  const trendData = moodHistory.map((m) => m.emotion);
+  const trendLabels = sortedHistory.map((m) =>
+  new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+);
+const trendData = sortedHistory.map((m) => m.emotion);
 
-  const moodMap = { angry: 0, sad: 1, neutral: 2, happy: 3, surprised: 4 };
+
+  const moodMap = { happy: 3, sad: 1, angry: 0, neutral: 2, surprised: 4 };
+  // const trendValues = trendData.map((m) => moodMap[m.toLowerCase()] || 2);
   const trendValues = trendData.map((m) => {
-  const key = m.toLowerCase().trim(); // normalize moods
-  return moodMap[key] !== undefined ? moodMap[key] : 2; // fallback still neutral
+  const lowerCaseMood = m.toLowerCase();
+
+   if (moodMap.hasOwnProperty(lowerCaseMood)) {
+      return moodMap[lowerCaseMood];
+    }
+   return 2; 
 });
-  
-  
+
+  // Custom Chart.js plugin to render emojis on line chart points
   const pointEmojiPlugin = {
     id: "pointEmojiPlugin",
     afterDatasetsDraw: (chart) => {
@@ -113,7 +127,7 @@ const MoodCharts = ({ moodHistory }) => {
           ctx.font = "20px Arial";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          
+          // Hide original point
           chart.getDatasetMeta(i).data[index].options.radius = 0;
           ctx.fillText(emoji, point.x, point.y);
         });
@@ -121,6 +135,10 @@ const MoodCharts = ({ moodHistory }) => {
       ctx.restore();
     },
   };
+
+console.log("Trend Data (string moods):", trendData);
+console.log("Trend Values (mapped numbers):", trendValues);
+
 
   return (
     <motion.div
@@ -196,70 +214,59 @@ const MoodCharts = ({ moodHistory }) => {
 
         {/* Line Chart */}
         <Card>
-  <h3 className="text-xl font-bold mb-4 text-center text-gray-200">Mood Trend</h3>
-  <Line
-  plugins={[pointEmojiPlugin]}
-  data={{
-    labels: trendLabels,
-    datasets: [
-      {
-        label: "Mood over Time",
-        data: trendValues,
-        fill: true,
-        backgroundColor: "rgba(147, 51, 234, 0.1)",
-        borderColor: "#8b5cf6",
-        tension: 0.4,
-        pointRadius: 8,
-        pointHoverRadius: 14,
-        pointBackgroundColor: 'transparent',
-        pointBorderColor: 'transparent'
-      },
-    ],
-  }}
-  options={{
-    responsive: true,
-    animation: { duration: 1000, easing: "easeOutQuart" }, // smooth line draw
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: (tooltipItem) => {
-            const emoji = moodIcons[trendData[tooltipItem.dataIndex].toLowerCase()] || "😐";
-            return `${emoji} ${trendData[tooltipItem.dataIndex]}`;
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        min: 0,
-        max: 4,
-        ticks: {
-          stepSize: 1,
-          color: "#d1d5db",
-          callback: (val) => {
-            const moodReverseMap = { 0: "Angry", 1: "Sad", 2: "Neutral", 3: "Happy", 4: "Excited", 5: "Surprised" };
-            return moodReverseMap[val] || '';
-          },
-        },
-        grid: { color: 'rgba(255, 255, 255, 0.1)' },
-      },
-      x: {
-        ticks: { 
-          color: "#d1d5db", 
-          maxRotation: 45, 
-          minRotation: 45, 
-          autoSkip: true, 
-          maxTicksLimit: 6 
-        },
-        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-      },
-    },
-  }}
-/>
-
-</Card>
-
+          <h3 className="text-xl font-bold mb-4 text-center text-gray-200">Mood Trend</h3>
+          <Line
+            plugins={[pointEmojiPlugin]}
+            data={{
+              labels: trendLabels,
+              datasets: [
+                {
+                  label: "Mood over Time",
+                  data: trendValues,
+                  fill: true,
+                  backgroundColor: "rgba(99, 102, 241, 0.2)",
+                  borderColor: "#818CF8",
+                  tension: 0.4,
+                  pointRadius: 10,
+                  pointHoverRadius: 12,
+                  pointBackgroundColor: 'transparent',
+                  pointBorderColor: 'transparent'
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: (tooltipItem) => {
+                      const emoji = moodIcons[trendData[tooltipItem.dataIndex].toLowerCase()] || "😐";
+                      return `${emoji} ${trendData[tooltipItem.dataIndex]}`;
+                    },
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  
+                  grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                  ticks: {
+                    color: '#d1d5db',
+                    stepSize: 1,
+                    callback: (val) => {
+                      const moodReverseMap = { 0: "Angry", 1: "Sad", 2: "Neutral", 3: "Happy", 4: "Surprised" };
+                      return moodReverseMap[val] || '';
+                    },
+                  },
+                  // min: 0,
+                  // max: 4,
+                },
+                x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#d1d5db' } ,offset: true }
+              },
+            }}
+          />
+        </Card>
       </div>
     </motion.div>
   );
@@ -326,15 +333,36 @@ const MostPrevalentMood = ({ moodHistory }) => {
 
 // --- MAIN PAGE COMPONENT ---
 
-export default function History() {
-  const [moodHistory, setMoodHistory] = useState([]);
+// export default function History() {
+//   const [moodHistory, setMoodHistory] = useState([]);
 
-  useEffect(() => {
-    // In a real app, you might fetch this from an API
-    // For now, we use localStorage
-    const history = JSON.parse(localStorage.getItem("moodHistory")) || [];
-    setMoodHistory(history.slice(-10)); // Get the last 10 entries
-  }, []);
+//   useEffect(() => {
+//     // In a real app, you might fetch this from an API
+//     // For now, we use localStorage
+//     const history = JSON.parse(localStorage.getItem("moodHistory")) || [];
+//     setMoodHistory(history.slice(-10)); // Get the last 10 entries
+//   }, []);
+
+export default function History() {
+const [moodHistory, setMoodHistory] = useState([]);
+ const { session } = useAuth();
+
+ useEffect(() => {
+  const load = async () => {
+    try {
+       if (session?.user?.id) {
+        const data = await fetchHistory(session.user.id, 10);
+        setMoodHistory(data);
+      } else {
+        setMoodHistory(getGuestHistory());
+       }
+     } catch (e) {
+      console.error("History load failed, falling back to local:", e);
+        setMoodHistory(getGuestHistory());
+     }
+   };
+   load();
+ }, [session?.user?.id]);
 
   return (
     <div className="relative flex flex-col min-h-screen bg-gradient-to-b from-[#0f0f1a] via-[#1a1a2e] to-[#0f0f1a] text-white font-sans overflow-x-hidden">

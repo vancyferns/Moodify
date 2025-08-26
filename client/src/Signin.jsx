@@ -8,6 +8,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import wavesgif from "./assets/waves2.gif";
 import toast from "react-hot-toast";
+import { clearUserHistory, setUserHistory } from "./historyLocal";
+import { fetchHistory } from "./historyApi";
+
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -34,8 +37,23 @@ export default function Signin() {
     
      toast.success("Signed in successfully");
      setSession(res.data);
-    
-     navigate("/", { replace: true });
+ 
+  clearUserHistory(); 
+
+
+   const uid = res.data?.user?.id || res.data?.user?._id;
+  if (uid) {
+    try {
+     const dbHistory = await fetchHistory(uid, 10);
+      setUserHistory(dbHistory); 
+    } catch (err) {
+      console.error("Failed to fetch user history:", err);
+    }
+  }
+
+  navigate("/", { replace: true });
+
+
   };
 
   return (

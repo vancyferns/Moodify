@@ -1,4 +1,4 @@
-import React from 'react';
+import React ,{ useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from "./AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
@@ -19,12 +19,18 @@ import AccountChoice from "./AccountChoice";
 import { Toaster } from "react-hot-toast";
 import AccountTypeSelection from './AccountTypeSelection';
 import SigninAdmin from './SigninAdmin';
+import { initGuestSession } from "./historyLocal";
+
 
 function AppContent() {
   const location = useLocation();
 
   const footerRoutes = ['/', '/how-it-works', '/about', '/songs','/account','/signin','/signup','/questionnaire', '/emotion-detection','/songlist', '/account-selection', '/signin-admin'];
   const showFooter = footerRoutes.includes(location.pathname);
+
+  useEffect(() => {
+    initGuestSession();
+  }, []);
 
   return (
     <>
@@ -34,7 +40,7 @@ function AppContent() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/choose" element={<Choose />} />
           <Route path="/emotion-detection" element={<EmotionDetection />} />
-          <Route path="/questionnaire" element={<EmotionQuestionnaire />} />          
+          <Route path="/questionnaire" element={<EmotionQuestionnaire />} />       
           <Route path="/songlist" element={<SongList />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/about" element={<AboutUs />} />

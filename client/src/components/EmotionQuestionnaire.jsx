@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Go up one level from 'components' to 'src', then into 'assets'
 import wavesgif from "../assets/waves2.gif";
+import { trackMood } from "../trackMood";
+
 function EmotionQuestionnaire() {
   // Hook for navigation
   const navigate = useNavigate();
@@ -73,15 +75,13 @@ function EmotionQuestionnaire() {
 
       // Save emotion to history
       if (data.primary_emotion) {
-        const newHistoryEntry = {
-          emotion: data.primary_emotion,
-          timestamp: new Date().toISOString(),
-        };
+await trackMood(data.primary_emotion);
 
-        // Retrieve existing history, add new entry, and limit to 10
-        const existingHistory = JSON.parse(localStorage.getItem("moodHistory")) || [];
-        const updatedHistory = [newHistoryEntry, ...existingHistory].slice(0, 10);
-        localStorage.setItem("moodHistory", JSON.stringify(updatedHistory));
+
+      //   // Retrieve existing history, add new entry, and limit to 10
+      //   const existingHistory = JSON.parse(localStorage.getItem("moodHistory")) || [];
+      //   const updatedHistory = [newHistoryEntry, ...existingHistory].slice(0, 10);
+      //   localStorage.setItem("moodHistory", JSON.stringify(updatedHistory));
       }
 
       // Navigate to the song list page and pass the results in the route's state
