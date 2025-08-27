@@ -56,7 +56,7 @@ function EmotionQuestionnaire() {
     setError(null);
     setLoadingMessage('Analyzing your emotions with AI...');
 
-    const apiUrl = 'http://127.0.0.1:5001/predict';
+    const apiUrl = 'https://moodify-haag.onrender.com/predict';
     const payload = { responses: answeredResponses };
 
     try {
