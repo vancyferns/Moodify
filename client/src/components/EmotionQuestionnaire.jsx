@@ -1,11 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Go up one level from 'components' to 'src', then into 'assets'
 import wavesgif from "../assets/waves2.gif";
 import { trackMood } from "../trackMood";
 
 function EmotionQuestionnaire() {
-  // Hook for navigation
   const navigate = useNavigate();
 
   const questions = [
