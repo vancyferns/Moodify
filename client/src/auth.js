@@ -4,7 +4,8 @@
 import { v4 as uuidv4 } from 'uuid';
 
 // Use environment variables for the API base URL
-const API_BASE = import.meta.env.VITE_AUTH_API || "http://localhost:5002";
+const API_BASE = (import.meta.env.VITE_AUTH_API || "http://localhost:5002").replace(/\/$/, "");
+
 const USE_MOCK = (import.meta.env.VITE_USE_MOCK_AUTH || "false") === "true";
 
 // Local session utils - unchanged, as this is safe practice
