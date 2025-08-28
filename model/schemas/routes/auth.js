@@ -12,7 +12,7 @@ const router = express.Router();
  */
 router.post("/signin/admin", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body; // password = SHA-256 from frontend
 
     if (!email || !password) {
       return res.status(400).json({ error: "All fields are required" });
@@ -23,7 +23,6 @@ router.post("/signin/admin", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // Compare frontend SHA-256 string with stored bcrypt hash
     const isMatch = await bcrypt.compare(password, existingAdmin.password);
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
@@ -51,7 +50,7 @@ router.post("/signin/admin", async (req, res) => {
  */
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password } = req.body; // password is already SHA-256 from frontend
+    const { name, email, password } = req.body; // password = SHA-256 from frontend
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: "All fields are required" });
@@ -62,7 +61,6 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    // Hash SHA-256 password again with bcrypt before storing
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -101,7 +99,6 @@ router.post("/signin", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // Compare SHA-256 string from frontend with bcrypt hash in DB
     const isMatch = await bcrypt.compare(password, existingUser.password);
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
@@ -122,186 +119,3 @@ router.post("/signin", async (req, res) => {
 });
 
 export default router;
-
-
-// import express from "express";
-// import bcrypt from "bcryptjs";
-// import User from "../User.js";
-// import Admin from "../Admin.js";
-
-// const router = express.Router();
-
-
-// // ADMIN SIGNIN
-// router.post("/signin/admin", async (req, res) => {
-//   try {
-//     const { email, password } = req.body; // password here is SHA-256 from frontend
-
-//     if (!email || !password) {
-//       return res.status(400).json({ error: "All fields are required" });
-//     }
-
-//     const existingAdmin = await Admin.findOne({ email });
-//     if (!existingAdmin) {
-//       return res.status(400).json({ error: "Invalid credentials" });
-//     }
-
-//     // Compare SHA-256 string with bcrypt hash
-//     const isMatch = await bcrypt.compare(password, existingAdmin.password);
-//     if (!isMatch) {
-//       return res.status(400).json({ error: "Invalid credentials" });
-//     }
-
-//     return res.status(200).json({
-//       message: "Admin login successful",
-//       user: {
-//         id: existingAdmin._id,
-//         name: existingAdmin.name,
-//         email: existingAdmin.email,
-//         role: "admin",
-//       },
-//     });
-//   } catch (err) {
-//     console.error("Admin signin error:", err);
-//     return res.status(500).json({ error: "Server error" });
-//   }
-// });
-
-// // SIGNUP
-// router.post("/signup", async (req, res) => {
-//   try {
-//     const { name, email, password } = req.body; 
-
-//     if (!name || !email || !password) {
-//       return res.status(400).json({ error: "All fields are required" });
-//     }
-
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).json({ error: "User already exists" });
-//     }
-
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
-
-//     const newUser = new User({ name, email, password: hashedPassword });
-//     await newUser.save();
-
-//     return res.status(201).json({
-//       message: "User created successfully",
-//       user: {
-//         id: newUser._id,
-//         name: newUser.name,
-//         email: newUser.email,
-//       },
-//     });
-//   } catch (err) {
-//     console.error("Signup error:", err);
-//     return res.status(500).json({ error: "Server error" });
-//   }
-// });
-
-// // SIGNIN
-// router.post("/signin", async (req, res) => {
-//   try {
-//     const { email, password } = req.body; 
-
-//     if (!email || !password) {
-//       return res.status(400).json({ error: "All fields are required" });
-//     }
-
-//     const existingUser = await User.findOne({ email });
-//     if (!existingUser) {
-//       return res.status(400).json({ error: "Invalid credentials" });
-//     }
-
-//     // Compare the plaintext password from the request with the stored bcrypt hash
-//     const isMatch = await bcrypt.compare(password, existingUser.password);
-//     if (!isMatch) {
-//       return res.status(400).json({ error: "Invalid credentials" });
-//     }
-
-//     return res.status(200).json({
-//       message: "Login successful",
-//       user: {
-//         id: existingUser._id,
-//         name: existingUser.name,
-//         email: existingUser.email,
-//       },
-//     });
-//   } catch (err) {
-//     console.error("Signin error:", err);
-//     return res.status(500).json({ error: "Server error" });
-//   }
-// });
-
-// export default router;
-
-
-// import express from "express";
-// import bcrypt from "bcryptjs";
-// import User from "../User.js";
-
-// const router = express.Router();
-
-// // Signup route
-// router.post("/signup", async (req, res) => {
-//   try {
-//     const { name, email, password } = req.body;
-
-//     if (!name || !email || !password) {
-//       return res.status(400).json({ error: "All fields are required" });
-//     }
-
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).json({ error: "User already exists" });
-//     }
-
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
-
-//     const newUser = new User({ name, email, password: hashedPassword });
-//     await newUser.save();
-
-//     return res.status(201).json({ message: "User created successfully" });
-//   } catch (err) {
-//     console.error("Signup error:", err);
-//     return res.status(500).json({ error: "Server error" });
-//   }
-// });
-
-// // Signin route
-// router.post("/signin", async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     if (!email || !password) {
-//       return res.status(400).json({ error: "All fields are required" });
-//     }
-
-//     const existingUser = await User.findOne({ email });
-//     if (!existingUser) {
-//       return res.status(400).json({ error: "Invalid credentials" });
-//     }
-
-//     const isMatch = await bcrypt.compare(password, existingUser.password);
-//     if (!isMatch) {
-//       return res.status(400).json({ error: "Invalid credentials" });
-//     }
-
-//     return res.status(200).json({
-//       message: "Login successful",
-//       user: {
-//         id: existingUser._id,
-//         name: existingUser.name,
-//         email: existingUser.email,
-//       },
-//     });
-//   } catch (err) {
-//     console.error("Signin error:", err);
-//     return res.status(500).json({ error: "Server error" });
-//   }
-// });
-
-// export default router;
