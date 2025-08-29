@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Install system dependencies for OpenCV
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -21,7 +21,7 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Expose port for Render
-EXPOSE 10000
+EXPOSE 5000
 
 # Start your app using gunicorn
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:10000"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000"]
