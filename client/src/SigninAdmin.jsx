@@ -11,11 +11,20 @@ import wavesgif from "./assets/waves2.gif";
 import { clearUserHistory, setUserHistory } from "./historyLocal";
 import { fetchHistory } from "./historyApi";
 
-
+// ✅ Validation schema
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(1, "Password is required"),
 });
+
+// ✅ SHA-256 hashing function
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  return hashHex;
+}
 
 export default function SigninAdmin() {
   const { setSession, setLoading } = useAuth();
@@ -31,9 +40,12 @@ export default function SigninAdmin() {
     setError("");
     setLoading(true);
 
+    // ✅ Hash password before sending
+    const hashedPassword = await sha256(data.password);
+
     const result = await signinAdmin({
       email: data.email,
-      password: data.password,
+      password: hashedPassword, // <-- send SHA-256 hash
     });
 
     setLoading(false);
@@ -44,19 +56,17 @@ export default function SigninAdmin() {
     }
 
     toast.success("Admin signed in successfully");
-  setSession(result.data);
+    setSession(result.data);
 
-  clearUserHistory();
+    clearUserHistory();
+    try {
+      const dbHistory = await fetchHistory(result.data.user._id, 10);
+      setUserHistory(dbHistory);
+    } catch (err) {
+      console.error("Error fetching admin history:", err);
+    }
 
-  try {
-    const dbHistory = await fetchHistory(result.data.user._id, 10);
-    setUserHistory(dbHistory); 
-  } catch (err) {
-    console.error("Error fetching admin history:", err);
- }
-
-  navigate("/", { replace: true });
-
+    navigate("/", { replace: true });
   };
 
   return (

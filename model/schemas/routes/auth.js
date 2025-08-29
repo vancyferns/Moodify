@@ -23,6 +23,7 @@ router.post("/signin/admin", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    // Compare SHA-256 string with bcrypt hash
     const isMatch = await bcrypt.compare(password, existingAdmin.password);
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
@@ -61,8 +62,7 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
