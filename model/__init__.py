@@ -16,6 +16,7 @@ app = Flask(__name__)
 CORS(
     app,
     origins=[
+        "https://moodify-murex.vercel.app"
         "http://localhost:5173",
         "https://humble-goldfish-4j9wgq46wr6j3j6xj-5173.app.github.dev"
     ],
