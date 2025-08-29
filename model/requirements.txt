@@ -19,10 +19,10 @@ opencv-contrib-python
 opencv-python
 mtcnn
 retina-face
-tensorflow
-tf_keras
-keras
-torch
+tensorflow==2.20.0
+tf-keras==2.20.0
+keras==3.11.3
+torch==2.8.0+cpu
 numpy
 scipy
 scikit-learn
@@ -41,5 +41,5 @@ h5py
 # Optional
 ffmpeg
 imageio
-imageio-ffm
+imageio-ffmpeg
 gunicorn
