@@ -13,11 +13,11 @@ pymongo
 dnspython
 
 # Deep Learning & Image Processing
-deepface
+deepface==0.0.93
 opencv-contrib-python-headless
 opencv-python-headless
-mtcnn
-retina-face
+mtcnn==1.0.0
+retina-face==0.0.17
 tensorflow
 tf_keras
 keras
@@ -41,4 +41,4 @@ h5py
 imageio
 imageio-ffmpeg
 ffmpeg-python
-guicorn
+gunicorn
