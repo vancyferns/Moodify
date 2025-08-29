@@ -10,8 +10,6 @@ const SongAddedModal = ({ open, onClose, songName, songArtist }) => {
           Song Added!
         </h2>
         <p className="text-gray-300 mb-6">
-          <span className="font-semibold">{songName}</span> by{" "}
-          <span className="font-semibold">{songArtist}</span> has been added.
         </p>
         <button
           onClick={onClose}
