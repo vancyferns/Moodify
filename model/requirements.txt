@@ -13,11 +13,11 @@ pymongo
 dnspython
 
 # Deep Learning & Image Processing
-deepface
+deepface==0.0.93
 retina-face
-tensorflow
+tensorflow==2.16.1
 tf_keras
-keras
+keras==3.0.4
 opencv-contrib-python
 opencv-python
 mtcnn
