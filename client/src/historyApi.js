@@ -1,4 +1,6 @@
-const API = import.meta.env.VITE_AUTH_API || "http://localhost:5002";
+// Clean up the base API URL to avoid trailing slashes or spaces
+const rawAPI = import.meta.env.VITE_AUTH_API || "http://localhost:5002";
+const API = rawAPI.trim().replace(/\/+$/, ""); // removes trailing slashes
 
 export async function fetchHistory(userId, limit = 10) {
   const res = await fetch(`${API}/api/history/${userId}?limit=${limit}`, {
