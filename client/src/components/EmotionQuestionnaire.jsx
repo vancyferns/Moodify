@@ -106,7 +106,7 @@ function EmotionQuestionnaire() {
     setError(null);
     setLoadingMessage('Analyzing your emotions with AI...');
 
-    const apiUrl = 'https://8000-dep-01k48ja7x1nky2k987xrt9xkac-d.cloudspaces.litng.ai/predict';
+    const apiUrl = 'https://8000-01k48d3q1ezxrc3de82tb55nhg.cloudspaces.litng.ai/predict';
     const payload = { responses: answeredResponses };
 
     try {
